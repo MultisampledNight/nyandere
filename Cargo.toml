@@ -1,0 +1,13 @@
+[package]
+name = "nyandere"
+description = "i help with keeping track of purchases. meow"
+license = "MIT OR Apache-2.0"
+categories = ["command-line-utilities", ""]
+
+authors = ["MultisampledNight"]
+repository = "https://github.com/MultisampledNight/nyandere"
+
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
