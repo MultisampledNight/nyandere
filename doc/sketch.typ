@@ -70,7 +70,7 @@ sp = *WSP
 - The suffix defines the length
   - And also the mapping to the GTIN-14 codes
   - They all shift to the rightmost position
-    - E.g. GTIN-13 → GTIN-14 sets digit at position 1 to 0
+    - E.g. GTIN-13 → GTIN-14 sets digit at position 1 to 0
 - Book GTINs are constructed by just prefixing the 10-digit ISBN with 978 (which
   results in a GTIN-13)
 
