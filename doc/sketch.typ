@@ -23,7 +23,7 @@
 
 == Catalogizing a shop visit
 
-```shell
+```sh
 nyandere purchase
 ```
 
@@ -62,6 +62,29 @@ lowercase = %x61-7A ; a-z
 natural = 1*DIGIT
 sp = *WSP
 ```
+
+== Consuming something
+
+```sh
+nyandere consume <IDENT>
+```
+
+- Subtracts 1 from the count
+
+== Statistics
+
+```sh
+nyandere stats [TIMERANGE]
+```
+
+- Optionally accepts a timerange to emit statistics over
+  - If not passed, lists stats over the last 30 days
+- Statistics include
+  - Money spent in total
+  - Count of purchases
+  - Highest money spent in one purchase
+  - Average money spent per purchase
+  - Average products per purchase
 
 = GTIN
 
@@ -126,6 +149,7 @@ One-indexed, in the case of GTIN-14
   - Potentially even linked to and queryable with Wikidata??
     That'd be amazing
     (though probably also implying a lot of legal trouble)
+- Expiration dates
 
 = Resources and references
 
