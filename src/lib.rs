@@ -1,3 +1,5 @@
+pub mod entity;
+
 use eyre::Result;
 use sea_orm::Database;
 

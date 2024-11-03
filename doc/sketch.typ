@@ -248,3 +248,4 @@ One-indexed, in the case of GTIN-14
 
 - https://en.wikipedia.org/wiki/Global_Trade_Item_Number
 - https://www.sea-ql.org/sea-orm-tutorial
+- https://www.sea-ql.org/sea-orm-cookbook/007-run-migration-at-app-startup.html
