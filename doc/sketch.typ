@@ -228,6 +228,12 @@ One-indexed, in the case of GTIN-14
   }
 )
 
+- There's a $m:n$ relation between `product` and `session`,
+  which causes the realization of `purchase`.
+- This is a sketch. The actual column names might be different
+  since we're using an ORM.
+  Check the source code.
+
 = Future extensions
 
 - Different users
@@ -241,3 +247,4 @@ One-indexed, in the case of GTIN-14
 = Resources and references
 
 - https://en.wikipedia.org/wiki/Global_Trade_Item_Number
+- https://www.sea-ql.org/sea-orm-tutorial
