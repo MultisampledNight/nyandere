@@ -159,13 +159,23 @@ One-indexed, in the case of GTIN-14
       let y = int(idx / 2) * cell.y
       ((table, (
         pos: (x, y + linespace),
-        display: emph[table *#table*]
+        display: [*#table*]
       )),)
       fields.enumerate().map(
-        ((idx, name)) => (table + "-" + name, (
-          pos: (x, y + -linespace * idx),
-          display: name,
-        ))
+        ((idx, name)) => {
+          let full = table + "-" + name
+          let accent = (of: duality.pink, during: duality.blue)
+            .at(name, default:
+              (product-id: duality.pink, session-id: duality.blue)
+                .at(full, default: fg)
+            )
+
+          (full, (
+            pos: (x, y + -linespace * idx),
+            display: text(accent, name),
+            accent: accent,
+          ))
+        }
       )
     }))
     .join()
@@ -202,21 +212,19 @@ One-indexed, in the case of GTIN-14
   edges: {
     import gfx.draw: *
     let center = ("purchase-of", 50%, "consumption-of")
-    let prod = duality.green
-    let sess = duality.blue
-    let space = 0.4
+    let space = 0.75
     (
-      purchase-of: styled(br(
+      purchase-of: br(
         (rel: (-space, 0), to: center),
         br("consumption-of", arrow: false),
         vert("product-id"),
         "product-id",
-      ), fill: prod, stroke: prod),
-      purchase-during: styled(br(
+      ),
+      purchase-during: br(
         (rel: (space, 0), to: hori(center)),
         vert("session-id"),
         "session-id",
-      ), fill: sess, stroke: sess)
+      )
     )
   }
 )
