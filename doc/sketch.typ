@@ -193,7 +193,6 @@ One-indexed, in the case of GTIN-14
       "id",
       "start_at",
       "completed_at",
-      "aborted",
     ),
     purchase: (
       "id",
