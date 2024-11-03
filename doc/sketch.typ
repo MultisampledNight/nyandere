@@ -141,6 +141,86 @@ One-indexed, in the case of GTIN-14
 
 13 digits → GTIN-13
 
+= Database
+
+#let field(n) = (0, -1.5 * n)
+#let cell = (x: 10, y: -10)
+#let linespace = 1.5
+#let array-to-dict(it) = it.fold((:), (a, (k, v)) => {
+  a.insert(k, v)
+  a
+})
+#let tables(..it) = {
+  it.named()
+    .pairs()
+    .enumerate()
+    .map(((idx, (table, fields))) => array-to-dict({
+      let x = calc.rem(idx, 2) * cell.x
+      let y = int(idx / 2) * cell.y
+      ((table, (
+        pos: (x, y + linespace),
+        display: emph[table *#table*]
+      )),)
+      fields.enumerate().map(
+        ((idx, name)) => (table + "-" + name, (
+          pos: (x, y + -linespace * idx),
+          display: name,
+        ))
+      )
+    }))
+    .join()
+}
+#gfx.diagram(
+  nodes: tables(
+    product: (
+      "id",
+      "gtin",
+      "name",
+      "default_price",
+      "created_at",
+    ),
+    session: (
+      "id",
+      "start_at",
+      "completed_at",
+      "aborted",
+    ),
+    purchase: (
+      "id",
+      "of",
+      "during",
+      "count",
+      "total_price",
+    ),
+    consumption: (
+      "id",
+      "of",
+      "at",
+      "count",
+    ),
+  ),
+  edges: {
+    import gfx.draw: *
+    let center = ("purchase-of", 50%, "consumption-of")
+    let prod = duality.green
+    let sess = duality.blue
+    let space = 0.4
+    (
+      purchase-of: styled(br(
+        (rel: (-space, 0), to: center),
+        br("consumption-of", arrow: false),
+        vert("product-id"),
+        "product-id",
+      ), fill: prod, stroke: prod),
+      purchase-during: styled(br(
+        (rel: (space, 0), to: hori(center)),
+        vert("session-id"),
+        "session-id",
+      ), fill: sess, stroke: sess)
+    )
+  }
+)
+
 = Future extensions
 
 - Different users

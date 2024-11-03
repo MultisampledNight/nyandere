@@ -1,3 +1,3 @@
-fn main() {
-    println!("Hello, world!");
+fn main() -> eyre::Result<()> {
+    nyandere::run()
 }
