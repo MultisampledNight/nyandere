@@ -5,8 +5,7 @@ pub mod store;
 
 use eyre::Result;
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{ActiveModelTrait, ActiveValue, Database, EntityTrait};
-use time::macros::datetime;
+use sea_orm::{Database, EntityTrait};
 
 #[tokio::main]
 pub async fn run() -> Result<()> {
