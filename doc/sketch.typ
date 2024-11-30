@@ -77,7 +77,7 @@ nyandere consume <IDENT>
 nyandere stats [TIMERANGE]
 ```
 
-- Optionally accepts a timerange to emit statistics over
+- Accepts a timerange to emit statistics over
   - If not passed, lists stats over the last 30 days
 - Statistics include
   - Money spent in total
@@ -150,13 +150,13 @@ One-indexed, in the case of GTIN-14
   a.insert(k, v)
   a
 })
-#let tables(..it) = {
+#let tables(..it, columns: 3, accents: (:)) = {
   it.named()
     .pairs()
     .enumerate()
     .map(((idx, (table, fields))) => array-to-dict({
-      let x = calc.rem(idx, 2) * cell.x
-      let y = int(idx / 2) * cell.y
+      let x = calc.rem(idx, columns) * cell.x
+      let y = int(idx / columns) * cell.y
       ((table, (
         pos: (x, y + linespace),
         display: [*#table*]
@@ -164,11 +164,7 @@ One-indexed, in the case of GTIN-14
       fields.enumerate().map(
         ((idx, name)) => {
           let full = table + "-" + name
-          let accent = (of: duality.pink, during: duality.blue)
-            .at(name, default:
-              (product-id: duality.pink, session-id: duality.blue)
-                .at(full, default: fg)
-            )
+          let accent = accents.at(name, default: accents.at(full, default: fg))
 
           (full, (
             pos: (x, y + -linespace * idx),
@@ -180,69 +176,159 @@ One-indexed, in the case of GTIN-14
     }))
     .join()
 }
+#let (concept, object, user, session, delivery, payment, ..) = duality.values().slice(2)
+#let dt = gamut.sample(65%)
 #gfx.diagram(
   nodes: tables(
-    product: (
+    concept: (
       "id",
+      "during",
       "gtin",
       "name",
       "default_price",
-      "created_at",
     ),
     session: (
       "id",
-      "start_at",
-      "completed_at",
+      "start",
+      "end",
     ),
-    purchase: (
+    user: (
       "id",
-      "of",
+      "name",
+    ),
+    object: (
+      "id",
+      "instance_of",
+    ),
+    delivery: (
+      "id",
       "during",
-      "count",
-      "total_price",
-    ),
-    consumption: (
-      "id",
       "of",
+      "payment",
       "at",
-      "count",
+    ),
+    payment: (
+      "id",
+      "during",
+      "from",
+      "to",
+      "amount",
+      "at",
+    ),
+    accents: (
+      concept-id: concept,
+      object-id: object,
+      session-id: session,
+      user-id: user,
+      delivery-id: delivery,
+      payment-id: payment,
+
+      instance_of: concept,
+
+      of: object,
+      during: session,
+      payment: payment,
+
+      from: user,
+      to: user,
+
+      at: dt,
+      start: dt,
+      end: dt,
     ),
   ),
   edges: {
     import gfx.draw: *
-    let center = ("purchase-of", 50%, "consumption-of")
+    let line(..args) = br(..args, arrow: false)
+    let dist(..args) = styled(all(..args, arrow: false))
+    let corner(it) = line(vert(it), it)
+    let option(..args, accent: fg) = styled(
+      ..args,
+      stroke: (dash: "dashed", paint: accent),
+    )
     let space = 0.75
     (
-      purchase-of: br(
-        (rel: (-space, 0), to: center),
-        br("consumption-of", arrow: false),
-        vert("product-id"),
-        "product-id",
+      concept-id: option(line(
+        ("concept-id", 45%, "session-id"),
+        corner("object-instance_of"),
+      ), accent: concept),
+      object-id: line(
+        ("object-id", 55%, "delivery-id"),
+        corner("delivery-of"),
       ),
-      purchase-during: br(
-        (rel: (space, 0), to: hori(center)),
-        vert("session-id"),
-        "session-id",
-      )
+      session-id: all(
+        line(
+          ("session-id", 45%, "user-id"),
+          corner("payment-during"),
+          corner("delivery-during"),
+        ),
+        line(
+          ("concept-id", 55%, "session-id"),
+          corner("concept-during"),
+        ),
+      ),
+      payment-id: line(
+        ("delivery-id", 55%, "payment-id"),
+        corner("delivery-payment"),
+      ),
+
+      user-id: line(
+        (rel: (4, 0), to: "user-id"),
+        corner("payment-from"),
+        corner("payment-to"),
+      ),
     )
   }
 )
 
-- There's a $m:n$ relation between `product` and `session`,
-  which causes the realization of `purchase`.
 - This is a sketch. The actual column names might be different
   since we're using an ORM.
   Check the source code.
+- `payment.amount` must be positive
+  - A delivery implies a payment of sorts
+  - So if $A$ buys something for $B$, then $A$ does a payment to $B$
+
+= Workflow
+
+Assuming
+users $t, u, k$,
+concept $c$,
+object $o$,
+sessions $s_1, s_2, s_3$ and
+payments $p_1, p_2, p_3, p_4$.
+Price function for object $o$ is $P(o)$.
+
+- Physically
+  + $t$ buys $o$ at store $k$
+  + $t$ gives $o$ to $u$
+  + At some later point in time,
+    $u$ gives $P(o)$ to $t$
+
+- Technically
+  + Creation of users $t, u, k$
+  + During new session $s_1$
+    + Create $c$
+    + Create $o$ as instance of $c$
+    + $p_1$: Pay $P(o)$ from $k$ to $t$
+    + $d_1$: Deliver $o$ with $p_1$
+    + $p_2$: Pay $P(o)$ from $t$ to $k$
+  + During new session $s_2$
+    + $p_3$: Pay $P(o)$ from $t$ to $u$
+    + $d_2$: Deliver $o$ with $p_2$
+  + Sometime later, during new session $s_3$
+    + $p_4$: Pay $P(o)$ from $u$ to $t$
+
 
 = Future extensions
 
-- Different users
 - Bottle deposits
 - Different shops and their default prices each
   - Potentially even linked to and queryable with Wikidata??
     That'd be amazing
     (though probably also implying a lot of legal trouble)
 - Expiration dates
+- Consumption of objects
+  - And tracking who owns which object
 
 = Resources and references
 
