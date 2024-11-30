@@ -11,6 +11,7 @@ edition = "2021"
 version = "0.1.0"
 
 [dependencies]
+clap = { version = "4.5.21", features = ["derive"] }
 eyre = "0.6.12"
 futures = "0.3.29"
 migration = { version = "0.1.0", path = "migration", package = "nyandere_migration" }

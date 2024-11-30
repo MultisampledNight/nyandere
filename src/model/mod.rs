@@ -8,18 +8,9 @@
 
 pub mod db;
 
-use std::{
-    num::{NonZero, ParseIntError},
-    str::FromStr,
-};
+use std::{num::ParseIntError, str::FromStr};
 
 use thiserror::Error;
-
-pub struct Purchase {
-    pub override_price: Option<Price>,
-    pub count: NonZero<u32>,
-    pub product: product::Spec,
-}
 
 pub mod product {
     use super::*;
