@@ -2,7 +2,9 @@
 
 pub mod prelude;
 
-pub mod consumption;
-pub mod product;
-pub mod purchase;
+pub mod concept;
+pub mod delivery;
+pub mod object;
+pub mod payment;
 pub mod session;
+pub mod user;

@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+repo=`git rev-parse --show-toplevel`
+repo=`realpath --relative-to "$(pwd)" "$repo"`
+sea generate entity \
+	--output-dir "$repo/src/model/db" \
+	--date-time-crate time \
+	--with-serde both

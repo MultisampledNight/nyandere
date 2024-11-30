@@ -6,6 +6,8 @@
 //! — you will probably never need to directly use [`crate::entity`] if you don't want to
 //! interface directly with the database.
 
+pub mod db;
+
 use std::{
     num::{NonZero, ParseIntError},
     str::FromStr,
@@ -63,7 +65,7 @@ pub mod product {
 ///
 /// # Resources
 ///
-/// - https://en.wikipedia.org/wiki/Global_Trade_Item_Number
+/// - <https://en.wikipedia.org/wiki/Global_Trade_Item_Number>
 // largest number representable by 14 digits is `10^14 - 1`,
 // which requires `ceil(log2(10^14 - 1)) = 47` bits
 // next largest int is u64
