@@ -1,4 +1,4 @@
-#import "@local/flow:0.1.0": *
+#import "@preview/flow:0.3.0": *
 
 #let accents = duality.values().slice(2)
 #let accents = (

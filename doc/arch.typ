@@ -361,7 +361,7 @@ for GTIN-14
   // due to the alignment bringing them on the same level anyway
   // so i decided for the digits
   let indices = range(it.len())
-    .map(idx => dim($#(idx + 1) &&$))
+    .map(idx => fade($#(idx + 1) &&$))
     .join()
   let digits = chunks-from-right(it.clusters())
     .map(chunk => chunk
@@ -371,7 +371,7 @@ for GTIN-14
     .join(h(1.5em))
 
   block(width: 100%, $
-  #dim("idx:") #h(0.75em) &&#indices \
+  #fade("idx:") #h(0.75em) &&#indices \
   "code:" #h(0.75em) &&#digits
   $)
 }
