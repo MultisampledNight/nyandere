@@ -47,7 +47,7 @@
 
 #show: note.with(
   title: "Nyandere",
-  subtitle: "nyaaa",
+  subtitle: "we heard you like category theory so we abstracted goods into objects and their value into a separate category and traded that instead",
   keywords: keywords,
 )
 #show heading.where(level: 1): (
@@ -59,60 +59,88 @@ No warranty.
 
 = Idea
 
-/ Entity:
-  An actor in this system.
+#let (bal, pay, deliver) = ("bal", "pay", "deliver").map(math.op)
+
+== Notation
+
+/ $a -> b$: Entity $a$ *to* entity $b$.
+
+/ $a ->^o b$: Entity $a$ *gives* object $o$ *to* entity $b$.
+
+== Terms
+
+/ Entity $e$:
+  An actor in this system
+  that can make and receive
+  payments and deliveries.
   <entity>
-  - Each entity has a *balance* to all other entities.
 
-/ Payment:
-  One modification of that balance between entities $a -> b$.
-  <payment>
-  - The amount in one payment is always positive.
-  - One entity can make any number of payments.
-    - Including multiple ones to the same entity.
-
-/ Delivery:
-  Transfer of an object between entities $a -> b$.
-  <delivery>
-
-  #caution[
-    Each delivery implies a payment
-    from $a$ to $b$,
-    representing the value transfer
-    $a$ expects from $b$
-    for the delivery.
-
-    - If $a$ gifts the object to $b$,
-      then the associated payment
-      has as amount $0$.
-   ]
-
-   - Possession isn't modelled though.
-     - So theoretically,
-       an entity $a$ *could* deliver the same object $o$
-       to both entities $b, c$.
-
-/ Session:
+/ Session $s$:
   One time period during which
-  any amount of payments and deliveries
+  any count of payments and deliveries
   are made.
   <session>
 
-/ Object:
+=== Payment of value
+
+/ Payment $pay_i (a -> b)$:
+  The $i$-th value transfer from $a$ to $b$.
+  <payment>
+  - The value in one payment is always $>= 0$.
+  - One entity can make any number of payments.
+    - Including multiple ones to the same entity.
+
+/ Balance $bal(a -> b)$:
+  How much $a$ owes $b$.
+  <balance>
+  - Equivalently: How much $a$ would need to pay to $b$ in order for the payments to each other to zero out.
+  - May be negative.
+
+  #define[$
+  bal(a -> b)
+  := sum_i pay_i (b -> a)
+  - sum_i pay_i (a -> b)
+  $]
+  #propose[$
+  bal(a -> b) = - bal(b -> a)
+  $]
+
+=== Giving things around
+
+/ Object $o$:
   One physical body that can be given around.
   <object>
-  - Assumed to be atomic.
+  - Assumed to be discretely counted.
   - May be an instance of a concept.
+    - The concept can be used as index then,
+      e.g. $o_c$.
 
-/ Concept:
+/ Concept $c$:
   The general idea of a product.
   <concept>
   - Has a GTIN, a name, the works.
-  - When one says
+  - Example: When one says
     "I'm going to buy an Izeps",
     one usually means buying an *object*
     that is an *instance*
     of the *concept* "Izeps".
+
+/ Delivery $deliver(a ->^o b)$:
+  Transfer of $o$ from $a$ to $b$
+  implying a payment $pay(a -> b)$
+  of the value $a$ expects from $b$ for $o$.
+  <delivery>
+
+  - Note that the payment
+    is direct part of the delivery.
+  - If $o$ is a _gift_,
+    the associated payment
+    has the value $0$.
+  - Possession isn't modelled!
+    - So theoretically,
+      $a$ *could* deliver the same $o$
+      to both entities $b, c$
+      separately.
 
 
 = Usage
