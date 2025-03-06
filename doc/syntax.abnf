@@ -11,9 +11,9 @@ create = "create" hsp actor
 transfer = purchase / pay / deliver
 analyze = stats / balance
 
-purchase = "purchase" product [price] dir
 pay = "pay" value dir
 deliver = "deliver" product [price] dir
+purchase = "purchase" product [price] dir
 
 stats = ("stats" / "statistics") over
 balance = ("bal" / "balance") dir

@@ -196,10 +196,15 @@ products.
 === Actions
 
 #cmds(
-`pay ...`,
+`pay <value>
+  from <from>
+  to <to>`,
 [...],
 
-`deliver ...`,
+`deliver <product>
+  (price <price>)
+  from <from>
+  to <to>`,
 [...],
 
 `purchase <product>
@@ -212,10 +217,12 @@ products.
 === Analysis
 
 #cmds(
-`stats ...`,
+`stats (<range>)`,
 [...],
 
-`balance ...`,
+`balance
+  from <from>
+  to <to>`,
 [...],
 )
 
