@@ -3,8 +3,8 @@
 
 #let cmds = table.with(
   columns: (auto, 1fr),
-  align: horizon,
-  fill: (x, y) => if x == 0 and y > 0 { luma(0%) },
+  align: left + horizon,
+  fill: (x, y) => if x == 0 and y > 0 { halcyon.bg },
   stroke: (x, y) => {
     let grey = gamut.sample(30%)
     if x == 0 { (right: grey) }
@@ -245,10 +245,11 @@ Introspect the current context.
 - Note that the context is left untouched
 - The only commands that can
   interact with permanent state
-- Context
-  - *Necessary* one is listed in angle brackets (`<>`)
-  - *Optional* one is listed in parentheses (`()`)
-    - This includes conditionally optional ones
+- Context being optional or not is denoted via the delimiter kind:
+  - *Necessary* has angle brackets (`<>`)
+  - *Optional* has parentheses (`()`)
+    - Including conditionally optional ones
+      #fade[(ones that change in optionality depending on other context)]
 
 
 #cmds(
@@ -256,26 +257,39 @@ Introspect the current context.
   <by> <of>
   (from) (for)
   (at) (resell)`,
-  [...],
+  [#todo[
+    `from` delivers `of` to `by` at `at`,
+    `by` pays `at` to `from`,
+    `by` delivers `of` to `for` at `at`]],
 
-  `stats <range>`,
-  [...],
+  `pay
+    <at>
+    <from> <to>`,
+  [Pays `at` from `from` to `to`.],
+  
+  `deliver
+    <of>
+    <from> <to>
+    (at)`,
+  [Delivers `of` from `from` to `to` while also paying `at` from `from` to `to`.],
+
+  `gift
+    <of>
+    <from> <to>`,
+  [Alias to `deliver <of> <from> <to> at 0`.],
+
+  `stats (range)`,
+  [
+  - Default for `range`: Last 30 days
+  - Prints
+    - Money spent in total
+    - Count of purchases
+    - Highest money spent in one purchase
+    - Average money spent per purchase
+    - Average products per purchase
+  ],
 )
 
-==== Statistics
-
-```
-> stats [TIMERANGE]
-```
-
-- Accepts a timerange to emit statistics over
-  - If not passed, lists stats over the last 30 days
-- Statistics include
-  - Money spent in total
-  - Count of purchases
-  - Highest money spent in one purchase
-  - Average money spent per purchase
-  - Average products per purchase
 
 = Database
 
@@ -288,8 +302,9 @@ Assuming
 entities $t, u, k$,
 concept $c$,
 object $o$,
-sessions $s_1, s_2, s_3$ and
-payments $p_1, p_2, p_3, p_4$.
+sessions $s_n$,
+payments $p_n$ and
+deliveries $d_n$.
 Price function for object $o$ is $P(o)$.
 
 == Physically
@@ -361,8 +376,9 @@ nyandere
 
 ==== Digit semantics
 
-Based on their indexed, one-indexed,
-for GTIN-14
+Based on their indices.
+Starting from 1,
+for GTIN-14:
 
 / ${1}$: Indicator
   - ${0}$ Item itself without packaging
