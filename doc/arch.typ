@@ -263,19 +263,19 @@ Introspect the current context.
     `by` delivers `of` to `for` at `at`]],
 
   `pay
-    <at>
-    <from> <to>`,
+  <at>
+  <from> <to>`,
   [Pays `at` from `from` to `to`.],
   
   `deliver
-    <of>
-    <from> <to>
-    (at)`,
+  <of>
+  <from> <to>
+  (at)`,
   [Delivers `of` from `from` to `to` while also paying `at` from `from` to `to`.],
 
   `gift
-    <of>
-    <from> <to>`,
+  <of>
+  <from> <to>`,
   [Alias to `deliver <of> <from> <to> at 0`.],
 
   `stats (range)`,
@@ -289,6 +289,11 @@ Introspect the current context.
     - Average products per purchase
   ],
 )
+
+== ABNF
+
+#raw(read("syntax.abnf"), lang: "abnf", block: true)
+
 
 
 = Database

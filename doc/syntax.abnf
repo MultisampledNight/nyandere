@@ -1,0 +1,73 @@
+; toplevel
+script = *(*sd (statement sd / comment) *sd)
+
+statement = command
+comment = "#" *VCHAR newline
+
+command = create / transfer
+
+create = "create" hsp actor
+
+transfer = (purchase / pay / deliver) [hsp from] [hsp to]
+
+purchase = "purchase" hsp ident [hsp "@" hsp money]
+pay = "pay" hsp money
+deliver = "deliver" hsp ident [hsp "@" hsp money]
+
+from = "from" hsp entity
+to = "to" hsp entity
+
+; actors
+actor = entity / object / concept
+entity = "entity" ident
+object = "object" ident ["instance-of" ident]
+concept = "concept" ident ["price" money] ["gtin" gtin]
+
+; literals
+; assuming Gregorian calendar, roughly following RFC 3339
+literal = range / datetime / money / gtin
+range = year / yearmonth / date / explicit
+explicit = datetime ".." datetime
+datetime = date / date hsp time
+
+date = yearmonth "-" day
+yearmonth = year "-" month
+
+year = 4*DIGIT
+; could be made more restricted in future... but not today
+month = 2DIGIT
+day = 2DIGIT
+
+money = cents / euros
+
+cents = decimal [osp sign-ct]
+euros = (decimal [osp sign-eur]) / (int osp sign-eur)
+
+sign-eur = "€" / "eur" / "EUR"
+sign-ct = "¢" / "ct" / "cents"
+
+gtin = 8DIGIT / 12*14DIGIT
+
+; basics
+ident = ALPHA *(alnum / connect)
+
+decimal = int "." 2DIGIT
+int = ["-"] nat
+nat = 1*DIGIT
+posnat = nonzero *DIGIT
+
+; whitespace
+; Statement delimiter.
+sd = osp (";" / newline) osp
+newline = LF / CRLF
+; Optional (can be, but doesn't have to)
+osp = *WSP
+; Hard (at least one)
+hsp = 1*WSP
+
+; one-character
+alnum = ALPHA / DIGIT
+connect = "-" / "_" / "/"
+
+nonzero = %x31-39
+
