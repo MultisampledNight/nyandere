@@ -18,21 +18,21 @@ deliver = "deliver" product [price] dir
 stats = ("stats" / "statistics") over
 balance = ("bal" / "balance") dir
 
+; actors
+actor = entity / object / concept
+entity = "entity" ident
+object = "object" ident ["instance-of" ident]
+concept = "concept" ident [price] ["gtin" gtin]
+
 ; parameters
 product = hsp ident
 over = hsp "over" hsp range
-price = hsp "@" value
+price = hsp "price" value
 value = hsp money
 
 dir = from to
 from = hsp "from" hsp entity
 to = hsp "to" hsp entity
-
-; actors
-actor = entity / object / concept
-entity = "entity" ident
-object = "object" ident ["instance-of" ident]
-concept = "concept" ident ["price" money] ["gtin" gtin]
 
 ; literals
 ; assuming Gregorian calendar, roughly following RFC 3339
