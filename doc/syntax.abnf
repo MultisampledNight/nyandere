@@ -1,21 +1,32 @@
 ; toplevel
 script = *(*sd (statement sd / comment) *sd)
 
-statement = command
-comment = "#" *VCHAR newline
+statement = command ; could think about adding variables in future
+comment = "#" *(VCHAR / hsp) newline
 
-command = create / transfer
+; commands
+command = create / transfer / analyze
 
 create = "create" hsp actor
+transfer = purchase / pay / deliver
+analyze = stats / balance
 
-transfer = (purchase / pay / deliver) [hsp from] [hsp to]
+purchase = "purchase" product [price] dir
+pay = "pay" value dir
+deliver = "deliver" product [price] dir
 
-purchase = "purchase" hsp ident [hsp "@" hsp money]
-pay = "pay" hsp money
-deliver = "deliver" hsp ident [hsp "@" hsp money]
+stats = ("stats" / "statistics") over
+balance = ("bal" / "balance") dir
 
-from = "from" hsp entity
-to = "to" hsp entity
+; parameters
+product = hsp ident
+over = hsp "over" hsp range
+price = hsp "@" value
+value = hsp money
+
+dir = from to
+from = hsp "from" hsp entity
+to = hsp "to" hsp entity
 
 ; actors
 actor = entity / object / concept
@@ -27,7 +38,7 @@ concept = "concept" ident ["price" money] ["gtin" gtin]
 ; assuming Gregorian calendar, roughly following RFC 3339
 literal = range / datetime / money / gtin
 range = year / yearmonth / date / explicit
-explicit = datetime ".." datetime
+explicit = datetime osp ".." osp datetime
 datetime = date / date hsp time
 
 date = yearmonth "-" day
