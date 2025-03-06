@@ -25,7 +25,7 @@ object = "object" ident ["instance-of" ident]
 concept = "concept" ident [price] ["gtin" gtin]
 
 ; parameters
-product = hsp ident
+product = hsp (ident / gtin)
 over = hsp "over" hsp range
 price = hsp "price" value
 value = hsp money
