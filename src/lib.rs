@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate macro_rules_attribute;
+
+pub mod aux;
 pub mod config;
 pub mod ext;
 pub mod lang;
@@ -8,7 +12,7 @@ use lang::parse;
 
 pub fn run() -> Result<()> {
     let cfg = config::cli();
-    parse::parse(&cfg.code);
+    dbg!(parse::parse(&cfg.code));
 
     Ok(())
 }

@@ -1,11 +1,18 @@
+; the actual parser impl accepts a superset of this syntax, actually
+; think of this syntax as a "declaration of intent"
+; rather than an ultimate truth
+;
+; (this is a subset in the meaning that any script written in this syntax
+; should also be accepted by the parser,
+; the parser might accept even more though)
+
 ; toplevel
 script = *(*sd (statement sd / comment) *sd)
 
-statement = command ; could think about adding variables in future
 comment = "#" *(VCHAR / hsp) newline
 
 ; commands
-command = create / transfer / analyze
+statement = create / transfer / analyze
 
 create = "create" hsp actor
 transfer = pay / deliver / purchase

@@ -5,22 +5,27 @@ use super::ast::Script;
 pub type Error<'a> = Rich<'a, char, SimpleSpan>;
 pub type Ctx<'a> = extra::Err<Error<'a>>;
 
-macro_rules! eval {
-    ($parser:expr => $input:expr) => {
-        let res: ParseResult<_, Error> = $parser.parse($input);
-        dbg!(res);
-    };
+pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
+    script().parse(src)
 }
 
-pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
+pub fn script<'a>() -> impl Parser<'a, &'a str, Script, Ctx<'a>> {
+    let statement = todo();
+
     // upon a `#`, ignore everything
     // until a newline or end of input
-    let comment = just::<_, _, Ctx>('#')
+    let comment = just('#')
         .then(any().repeated().lazy())
         .then(choice((newline(), end())))
         .ignored();
 
-    eval!(comment => src);
+    // statement delimiters
+    let delim = choice((newline(), just(';').ignored())).padded();
 
-    todo::<_, _, Ctx>().parse(src)
+    statement
+        .separated_by(choice((delim, comment)))
+        .allow_leading()
+        .allow_trailing()
+        .collect()
+        .map(Script)
 }

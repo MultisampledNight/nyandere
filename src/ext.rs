@@ -4,6 +4,8 @@ use std::{num::ParseIntError, str::FromStr};
 
 use thiserror::Error;
 
+use crate::aux::{Common, Owned};
+
 /// Global trade item number. The number behind the barcode you find in stores.
 ///
 /// Internationally standardized.
@@ -24,6 +26,7 @@ use thiserror::Error;
 // which requires `ceil(log2(10^14 - 1)) = 47` bits
 // next largest int is u64
 // which has the nice side effect of "automatically" padding shorter GTINs with zeroes
+#[derive(Common!)]
 pub struct Gtin(u64);
 
 impl Gtin {
