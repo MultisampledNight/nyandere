@@ -96,6 +96,7 @@ pub struct Dir {
     pub to: Ident,
 }
 
+#[allow(unused)]
 pub struct Ident(String);
 
 /// Number of cents.
