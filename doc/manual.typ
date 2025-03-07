@@ -55,6 +55,7 @@
   it => pagebreak(weak: true) + it
 )
 
+
 = Idea
 
 == Goals
@@ -496,4 +497,12 @@ for GTIN-14:
 - https://en.wikipedia.org/wiki/Global_Trade_Item_Number
 - https://www.sea-ql.org/sea-orm-tutorial
 - https://www.sea-ql.org/sea-orm-cookbook/007-run-migration-at-app-startup.html
+
+= Todo
+
+- [ ] Write parser
+- [ ] Write business logic
+- [ ] Introduce `import` command for sourcing another file
+  - Pretty much essential for keeping product databases
+- [o] Write REPL
 
