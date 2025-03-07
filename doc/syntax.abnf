@@ -8,14 +8,14 @@ comment = "#" *(VCHAR / hsp) newline
 command = create / transfer / analyze
 
 create = "create" hsp actor
-transfer = purchase / pay / deliver
+transfer = pay / deliver / purchase
 analyze = stats / balance
 
 pay = "pay" value dir
 deliver = "deliver" product [price] dir
 purchase = "purchase" product [price] dir
 
-stats = ("stats" / "statistics") over
+stats = "stats" / "statistics"
 balance = ("bal" / "balance") dir
 
 ; actors
@@ -26,29 +26,14 @@ concept = "concept" ident [price] ["gtin" gtin]
 
 ; parameters
 product = hsp (ident / gtin)
-over = hsp "over" hsp range
 price = hsp "price" value
 value = hsp money
 
 dir = from to
-from = hsp "from" hsp entity
-to = hsp "to" hsp entity
+from = hsp "from" hsp ident
+to = hsp "to" hsp ident
 
 ; literals
-; assuming Gregorian calendar, roughly following RFC 3339
-literal = range / datetime / money / gtin
-range = year / yearmonth / date / explicit
-explicit = datetime osp ".." osp datetime
-datetime = date / date ("T" / hsp) time
-
-date = yearmonth "-" day
-yearmonth = year "-" month
-
-year = 4*DIGIT
-; could be made more restricted in future... but not today
-month = 2DIGIT
-day = 2DIGIT
-
 money = cents / euros
 
 cents = decimal [osp sign-ct]
@@ -57,7 +42,8 @@ euros = (decimal [osp sign-eur]) / (int osp sign-eur)
 sign-eur = "€" / "eur" / "EUR"
 sign-ct = "¢" / "ct" / "cents"
 
-gtin = 8DIGIT / 12*14DIGIT
+; not entirely correct but eh
+gtin = *14DIGIT
 
 ; basics
 ident = ALPHA *(alnum / connect)

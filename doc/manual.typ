@@ -324,16 +324,15 @@ on the specifics of how to write them.
 === Analysis
 
 #detail(
-  `stats (<range>)`,
+  `stats`,
   [
-    Analyzes all payments and deliveries made
-    during `range`, defaulting to the last 30 days.
+    Analyzes all payments and deliveries made.
     Emitted are:
     
     - Money spent in total
     - Count of deliveries
     - Quartiles of money spent over purchases
-    - Average products per session
+    - Average products
   ],
 
   `balance
