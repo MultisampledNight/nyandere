@@ -111,6 +111,7 @@ Here, $a, b$ are entities, $o$ is an object.
   A time period during which
   any number of actions
   are made.
+  One script corresponds to one session.
 
 / Payment:
   Money transfer from $a$ to $b$.
@@ -289,32 +290,62 @@ on the specifics of how to write them.
   `pay <money>
   from <from:entity>
   to <to:entity>`,
-  [Transfers `value` money from `from` to `to`.
-  ],
+  [Transfers `money` from `from` to `to`.],
 
   `deliver <product>
   (price <money>)
   from <from:entity>
   to <to:entity>`,
-  [...],
+  [
+    Delivers `product` from `from` to `to`.
+    This implies a money transfer of `money`
+    from `from` to `to`.
+    `money` defaults to
+    the default price of `product`.
+  ],
 
   `purchase <product>
-  (price <value>)
+  (price <money>)
   from <from:entity>
   to <to:entity>`,
-  [...],
+  [
+    Deliver `product` from `from` to `to` and
+    immediately also pay back what's needed.
+    Shorthand for:
+    
+    ```
+    deliver <product> from <from> to <to>
+    pay <money> from <to> to <from>
+    ```
+  ],
 )
 
 === Analysis
 
 #detail(
   `stats (<range>)`,
-  [...],
+  [
+    Analyzes all payments and deliveries made
+    during `range`, defaulting to the last 30 days.
+    Emitted are:
+    
+    - Money spent in total
+    - Count of deliveries
+    - Quartiles of money spent over purchases
+    - Average products per session
+  ],
 
   `balance
   from <from:entity>
   to <to:entity>`,
-  [...],
+  [
+    Go through all payments,
+    including implied ones,
+    between `from` and `to` and
+    emit how much money `from`
+    needs to pay to `to`
+    so their balance is equal again.
+  ],
 )
 
 
