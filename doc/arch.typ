@@ -40,9 +40,7 @@
     .remove("paint")
     .pairs()
     .map(((name, accent)) => (name, text.with(accent)))
-  keywords
-    .remove("bold")
-    .map(term => (term, strong))
+  keywords.remove("bold").map(term => (term, strong))
   keywords.pairs()
 }.to-dict()
 
@@ -177,25 +175,36 @@ Here, $a, b$ are entities, $o$ is an object.
 #detail(
   target: [Type],
   `ident`,
-  [],
+  [
+    Textually names something.
+    Must start with an alphabetic
+    character,
+    then follow any number of alnum,
+    `-`, `_` or `/` characters.
+  ],
 
   `money`,
-  [],
+  [
+    Constructed value for goods.
+    The `value` can be specified in cents (e.g. `420 ct`)
+    or euros (e.g. `4.20 eur`).
+    If `ct` or `eur` are not specified, cents are assumed.
+  ],
 
   `product`,
   [],
 
   `range`,
   [],
-  
+
   `entity`,
   [],
-  
+
   `object`,
   [],
-  
+
   `concept`,
-  []
+  [],
 )
 
 See the full syntax description in @syntax
@@ -209,67 +218,64 @@ on the specifics of how to write them.
 === Creation
 
 #detail(
-`create entity <name>`,
-[Registers a new entity.],
+  `create entity <name>`,
+  [Registers a new entity.],
 
-`create object <name>
+  `create object <name>
   (instance-of <concept>)`,
-[Registers a new object.
-If `concept`
-is specified, that's what it'll be an instance of.
+  [Registers a new object.
+    If `concept`
+    is specified, that's what it'll be an instance of.
 
-Note that you'll basically never use this,
-chances are you actually want to create a concept instead
-.
-],
+    Note that you'll basically never use this,
+    chances are you actually want to create a concept instead
+    .
+  ],
 
-`create concept <name>
+  `create concept <name>
   (price <price>)
   (gtin <gtin>)`,
-[Registers a new concept.
-Has as default `price`,
-if it's unset it will need to be specified every time.
-If `gtin` is set, you can use it as
-alias equivalent for
-products.
-],
+  [Registers a new concept.
+    Has as default `price`,
+    if it's unset it will need to be specified every time.
+    If `gtin` is set, you can use it as
+    alias equivalent for
+    products.
+  ],
 )
 
 === Actions
 
 #detail(
-`pay <value>
+  `pay <value>
   from <from>
   to <to>`,
-[Transfers `value` money from `from` to `to`.
+  [Transfers `value` money from `from` to `to`.
+  ],
 
-The `value` can be specified in cents (e.g. `420 ct`)
-or euros (e.g. `4.20 eur`).
-If `ct` or `eur` are not specified, cents are assumed.],
-
-`deliver <product>
+  `deliver <product>
   (price <value>)
   from <from>
   to <to>`,
-[...],
+  [...],
 
-`purchase <product>
+  `purchase <product>
   (price <value>)
   from <from>
   to <to>`,
-[...],
+  [...],
 )
 
 === Analysis
 
 #detail(
-`stats (<range>)`,
-[...],
+  `stats (<range>)`,
+  [...],
 
-`balance
+  `balance
   from <from>
   to <to>`,
-[...],
+  [...],
 )
 
 
@@ -393,20 +399,18 @@ for GTIN-14:
   // whether the spacing is done on the indices or digits is irrelevant
   // due to the alignment bringing them on the same level anyway
   // so i decided for the digits
-  let indices = range(it.len())
-    .map(idx => fade($#(idx + 1) &&$))
-    .join()
+  let indices = range(it.len()).map(idx => fade($#(idx + 1) &&$)).join()
   let digits = chunks-from-right(it.clusters())
-    .map(chunk => chunk
-      .map(digit => $#digit &&$)
-      .join(h(1em))
-    )
+    .map(chunk => chunk.map(digit => $#digit &&$).join(h(1em)))
     .join(h(1.5em))
 
-  block(width: 100%, $
-  #fade("idx:") #h(0.75em) &&#indices \
+  block(
+    width: 100%,
+    $
+      #fade("idx:") #h(0.75em) &&#indices \
   "code:" #h(0.75em) &&#digits
-  $)
+    $,
+  )
 }
 
 - GTIN-13 as found on the barcode:
