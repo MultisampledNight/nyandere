@@ -155,8 +155,8 @@ Here, $a, b$ are entities, $o$ is an object.
 - Is a proper scripting language intended to be run as such
 - A REPL can also be started via the `nyandere` command
 - Comments are begun with `#`
-- Statements are commands,
   - Terminated by a newline
+- Statements are commands
 
 == Types
 
@@ -255,12 +255,13 @@ on the specifics of how to write them.
 === Creation
 
 #detail(
-  `create entity <name>`,
-  [Registers a new entity.],
+  `create entity <ident>`,
+  [Registers a new entity `ident`.],
 
-  `create object <name>
+  `create object <ident>
   (instance-of <concept>)`,
-  [Registers a new object.
+  [
+    Registers a new object referred to as `ident`.
     If `concept`
     is specified, that's what it'll be an instance of.
 
@@ -270,10 +271,11 @@ on the specifics of how to write them.
   ],
 
   `create concept <name>
-  (price <price>)
+  (price <money>)
   (gtin <gtin>)`,
-  [Registers a new concept.
-    Has as default `price`,
+  [
+    Registers a new concept `name`.
+    Has as default price `money`,
     if it's unset it will need to be specified every time.
     If `gtin` is set, you can use it as
     alias equivalent for
@@ -284,22 +286,22 @@ on the specifics of how to write them.
 === Actions
 
 #detail(
-  `pay <value>
-  from <from>
-  to <to>`,
+  `pay <money>
+  from <from:entity>
+  to <to:entity>`,
   [Transfers `value` money from `from` to `to`.
   ],
 
   `deliver <product>
-  (price <value>)
-  from <from>
-  to <to>`,
+  (price <money>)
+  from <from:entity>
+  to <to:entity>`,
   [...],
 
   `purchase <product>
   (price <value>)
-  from <from>
-  to <to>`,
+  from <from:entity>
+  to <to:entity>`,
   [...],
 )
 
@@ -310,13 +312,13 @@ on the specifics of how to write them.
   [...],
 
   `balance
-  from <from>
-  to <to>`,
+  from <from:entity>
+  to <to:entity>`,
   [...],
 )
 
 
-== Syntax <syntax>
+== Exact syntax <syntax>
 
 In ABNF:
 
