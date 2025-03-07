@@ -37,7 +37,7 @@ to = hsp "to" hsp ident
 money = cents / euros
 
 cents = decimal [osp sign-ct]
-euros = (decimal [osp sign-eur]) / (int osp sign-eur)
+euros = (decimal [osp sign-eur]) / (nat osp sign-eur)
 
 sign-eur = "€" / "eur" / "EUR"
 sign-ct = "¢" / "ct" / "cents"
@@ -48,10 +48,8 @@ gtin = *14DIGIT
 ; basics
 ident = ALPHA *(alnum / connect)
 
-decimal = int "." 2DIGIT
-int = ["-"] nat
+decimal = nat "." 2DIGIT
 nat = 1*DIGIT
-posnat = nonzero *DIGIT
 
 ; whitespace
 ; Statement delimiter.
@@ -65,6 +63,4 @@ hsp = 1*WSP
 ; one-character
 alnum = ALPHA / DIGIT
 connect = "-" / "_" / "/"
-
-nonzero = %x31-39
 
