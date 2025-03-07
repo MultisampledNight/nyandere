@@ -14,8 +14,6 @@ version = "0.1.0"
 clap = { version = "4.5.21", features = ["derive"] }
 eyre = "0.6.12"
 futures = "0.3.29"
-migration = { version = "0.1.0", path = "migration", package = "nyandere_migration" }
-sea-orm = { version = "1.1.0", features = ["runtime-tokio", "sqlx-sqlite"] }
 serde = { version = "1.0.215", features = ["derive"] }
 thiserror = "1.0.66"
 time = "0.3.36"
