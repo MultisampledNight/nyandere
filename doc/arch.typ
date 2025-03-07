@@ -1,7 +1,7 @@
 #import "prelude.typ": *
 #import "gfx.typ"
 
-#let cmds = table.with(
+#let detail(target: [Command], ..args) = table(
   columns: (auto, 1fr),
   align: left + horizon,
   fill: (x, y) => if x == 0 and y > 0 { halcyon.bg },
@@ -12,9 +12,10 @@
   },
   inset: 0.75em,
   table.header(
-    strong[Command],
-    strong[What does it do],
+    strong(target),
+    strong[Description],
   ),
+  ..args,
 )
 
 #let plurals = (
@@ -159,6 +160,47 @@ Here, $a, b$ are entities, $o$ is an object.
 - Statements are commands,
   - Terminated by a newline
 
+== Types
+
+- The syntax for the parameter placeholders below is `<name:type>`
+  - `name` refers to the parameter in the description text
+  - `type` is one of
+    `ident`,
+    `money`,
+    `product`,
+    `range`,
+    `entity`,
+    `object` or
+    `concept`,
+    explained below
+
+#detail(
+  target: [Type],
+  `ident`,
+  [],
+
+  `money`,
+  [],
+
+  `product`,
+  [],
+
+  `range`,
+  [],
+  
+  `entity`,
+  [],
+  
+  `object`,
+  [],
+  
+  `concept`,
+  []
+)
+
+See the full syntax description in @syntax
+on the specifics of how to write them.
+
 == Commands
 
 - Parameters have placeholder names in `<>`
@@ -166,7 +208,7 @@ Here, $a, b$ are entities, $o$ is an object.
 
 === Creation
 
-#cmds(
+#detail(
 `create entity <name>`,
 [Registers a new entity.],
 
@@ -195,20 +237,24 @@ products.
 
 === Actions
 
-#cmds(
+#detail(
 `pay <value>
   from <from>
   to <to>`,
-[...],
+[Transfers `value` money from `from` to `to`.
+
+The `value` can be specified in cents (e.g. `420 ct`)
+or euros (e.g. `4.20 eur`).
+If `ct` or `eur` are not specified, cents are assumed.],
 
 `deliver <product>
-  (price <price>)
+  (price <value>)
   from <from>
   to <to>`,
 [...],
 
 `purchase <product>
-  (price <price>)
+  (price <value>)
   from <from>
   to <to>`,
 [...],
@@ -216,7 +262,7 @@ products.
 
 === Analysis
 
-#cmds(
+#detail(
 `stats (<range>)`,
 [...],
 
@@ -227,12 +273,11 @@ products.
 )
 
 
-== Syntax
+== Syntax <syntax>
 
 In ABNF:
 
 #raw(read("syntax.abnf"), lang: "abnf", block: true)
-
 
 
 = Database
