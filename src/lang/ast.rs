@@ -1,4 +1,7 @@
-use crate::{aux::{Common, Owned}, ext::Gtin};
+use crate::{
+    aux::{Common, Owned},
+    ext::Gtin,
+};
 
 #[derive(Owned!)]
 pub struct Script(pub Vec<Stmt>);
@@ -6,11 +9,6 @@ pub struct Script(pub Vec<Stmt>);
 /// Something that can be done.
 #[derive(Owned!)]
 pub enum Stmt {
-    Command(Command),
-}
-
-#[derive(Owned!)]
-pub enum Command {
     Create(Create),
     Transfer(Transfer),
     Analyze(Analyze),
@@ -116,6 +114,17 @@ pub struct Dir {
 #[derive(Owned!)]
 #[allow(unused)]
 pub struct Ident(String);
+
+impl Ident {
+    /// Use for parsing only.
+    pub(super) fn new(ident: String) -> Self {
+        Self(ident)
+    }
+
+    pub fn get(&self) -> &str {
+        &self.0
+    }
+}
 
 /// Number of cents.
 #[derive(Common!)]

@@ -53,7 +53,7 @@ sign-ct = "¢" / "ct" / "cents"
 gtin = *14DIGIT
 
 ; basics
-ident = ALPHA *(alnum / connect)
+ident = ? Default Identifier as per https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax ?
 
 decimal = nat "." 2DIGIT
 nat = 1*DIGIT
@@ -69,5 +69,4 @@ hsp = 1*WSP
 
 ; one-character
 alnum = ALPHA / DIGIT
-connect = "-" / "_" / "/"
 
