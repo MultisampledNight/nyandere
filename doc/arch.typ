@@ -160,7 +160,8 @@ Here, $a, b$ are entities, $o$ is an object.
 
 == Types
 
-- The syntax for the parameter placeholders below is `<name:type>`
+- The syntax for the parameter placeholders below is
+  `<name:type>`
   - `name` refers to the parameter in the description text
   - `type` is one of
     `ident`,
@@ -171,6 +172,9 @@ Here, $a, b$ are entities, $o$ is an object.
     `object` or
     `concept`,
     explained below
+- `<name>` can also be used if the name for this parameter
+  is equal to the type
+  - I.e. it expands to `<name:name>`
 
 #detail(
   target: [Type],
@@ -181,30 +185,63 @@ Here, $a, b$ are entities, $o$ is an object.
     character,
     then follow any number of alnum,
     `-`, `_` or `/` characters.
+
+    - Example: `trans/4-20`
   ],
 
   `money`,
   [
     Constructed value for goods.
     The `value` can be specified in cents (e.g. `420 ct`)
-    or euros (e.g. `4.20 eur`).
-    If `ct` or `eur` are not specified, cents are assumed.
+    or euros in decimal form (e.g. `4.20 eur`).
+
+    `ct` or `eur` may be omitted, if so, cents are assumed.
   ],
 
   `product`,
-  [],
+  [
+    A created `gtin`, `concept` or `object`.
+    If a `concept`, they may be instantiated into
+    anonymous `object`s by the command.
+  ],
+
+  `gtin`,
+  [
+    Global Item Trade Number
+    usually found as a barcode on products
+    in stores.
+    Consists of 8, 12, 13 or 14 digits.
+
+    - Example: `12345678`
+  ],
 
   `range`,
-  [],
+  [
+    Finite temporal interval.
+    Start and end are inclusive and
+    datetimes in RFC 3339 style
+    with `T` or whitespace as date/time separator.
+    Start and end of the interval are delimited by two dots
+    (`..`).
+
+    - Example: `2025-03-01..2025-03-07`
+  ],
 
   `entity`,
-  [],
+  [
+    `ident` that has been previously `create entity`'d.
+  ],
 
   `object`,
-  [],
+  [
+    `ident` that has been previously `create object`'d.
+  ],
 
   `concept`,
-  [],
+  [
+    `ident` that has been previously `create concept`'d,
+    or a `gtin` referring to one that is.
+  ],
 )
 
 See the full syntax description in @syntax

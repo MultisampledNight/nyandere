@@ -39,7 +39,7 @@ to = hsp "to" hsp entity
 literal = range / datetime / money / gtin
 range = year / yearmonth / date / explicit
 explicit = datetime osp ".." osp datetime
-datetime = date / date hsp time
+datetime = date / date ("T" / hsp) time
 
 date = yearmonth "-" day
 yearmonth = year "-" month
