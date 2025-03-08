@@ -20,11 +20,17 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
 /// *n* arguments lead to the return type of `(T_1, ..., T_n)`.
 macro_rules! cmd {
     // split of 1 vs n is to avoid putting choice at all if there are any arguments
-    ($name:literal $( $arg_1:expr $(, $arg_n:expr)* $(,)? )? ) => {
+    (
+        $name:literal
+        $(
+            $arg_1:expr $(=> $arg_1_post:expr)?
+            $(, $arg_n:expr $(=> $arg_n_post:expr)? )* $(,)?
+        )?
+    ) => {
         keyword($name)$(
             .ignore_then(group((
-                hsp().ignore_then($arg_1),
-                $(hsp().ignore_then($arg_n)),*
+                $(($arg_1_post))? (hsp().ignore_then($arg_1)),
+                $($(($arg_n_post))? (hsp().ignore_then($arg_n))),*
             )))
         )?
     };
@@ -56,8 +62,12 @@ fn untup<T>((ele,): (T,)) -> T {
 // read the return types as "what will *the parser returned by this function* return"
 // not directly the function itself
 //
-// for calming the lsp while writing new parsers, consider appending
-// `.ignore_then(todo())`
+// - when using `.or_not()` in a `cmd!`'s arg, chances are you actually want
+//   to write `=> Parser::or_not` instead
+//   - that'll optionalize the whitespace as well
+//
+// - for calming the lsp while writing new parsers, consider appending
+//   `.ignore_then(todo())`
 parser! {
     /// Hard/necessary inline whitespace.
     fn hsp() -> () {
@@ -92,10 +102,9 @@ parser! {
         cmd!(
             "object"
             ident(),
-            // TODO: doesn't this need a space after the ident even if this is the `not` case?
-            cmd!("instance-of" ident()).map(untup).or_not(),
+            cmd!("parent" ident()).map(untup) => Parser::or_not,
         )
-        .map(|(name, instance_of)| Object { name, instance_of })
+        .map(|(name, parent)| Object { name, parent })
     }
 
     fn concept() -> Concept {
@@ -103,7 +112,7 @@ parser! {
             "concept"
             ident(),
             price().or_not(),
-            cmd!("gtin" gtin()).map(untup).or_not(),
+            cmd!("gtin" gtin()).map(untup) => Parser::or_not,
         )
         .ignore_then(todo())
     }
@@ -143,6 +152,7 @@ parser! {
 
     pub fn script() -> Script {
         statement()
+            .padded_by(inline_whitespace())
             .separated_by(choice((delim(), comment())))
             .allow_leading()
             .allow_trailing()

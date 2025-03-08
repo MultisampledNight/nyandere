@@ -28,7 +28,7 @@ balance = ("bal" / "balance") dir
 ; actors
 actor = entity / object / concept
 entity = "entity" hsp ident
-object = "object" hsp ident [hsp "instance-of" hsp ident]
+object = "object" hsp ident [hsp "parent" hsp ident]
 concept = "concept" hsp ident [hsp price] [hsp "gtin" gtin]
 
 ; parameters

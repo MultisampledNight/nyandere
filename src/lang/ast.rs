@@ -84,7 +84,7 @@ pub struct Entity {
 #[derive(Owned!)]
 pub struct Object {
     pub name: Ident,
-    pub instance_of: Option<Ident>,
+    pub parent: Option<Ident>,
 }
 
 #[derive(Owned!)]
