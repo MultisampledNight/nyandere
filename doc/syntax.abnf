@@ -33,7 +33,7 @@ concept = "concept" hsp ident [hsp price] [hsp "gtin" gtin]
 
 ; parameters
 product = hsp (ident / gtin)
-price = hsp "price" value
+price = hsp "price" hsp value
 value = hsp money
 
 dir = from to

@@ -31,10 +31,18 @@ macro_rules! cmd {
     ) => {
         keyword($name)$(
             .ignore_then(group((
-                $(($arg_1_post))? (hsp().ignore_then($arg_1)),
-                $($(($arg_n_post))? (hsp().ignore_then($arg_n))),*
+                param!($arg_1 $(=> $arg_1_post)?),
+                $(param!($arg_n $(=> $arg_n_post)?)),*
             )))
         )?
+    };
+}
+
+/// Prepends a hard space before the given argument,
+/// optionally with post-processing.
+macro_rules! param {
+    ($pre:expr $(=> $post:expr)?) => {
+        $(($post))? (hsp().ignore_then($pre))
     };
 }
 
@@ -101,39 +109,39 @@ parser! {
     }
 
     // parameters
-    
+
     fn from() -> Ident {
-        todo()
+        param!((cmd!("from" ident())).map(untup))
     }
 
     fn to() -> Ident {
-        todo()
+        param!((cmd!("to" ident())).map(untup))
     }
 
     fn dir() -> Dir {
-        todo()
+        group((from(), to())).map(|(from, to)| Dir { from, to })
     }
 
     fn product() -> Product {
-        todo()
+        param!(choice((
+            ident().map(Product::Name),
+            gtin().map(Product::Id),
+        )))
     }
 
     fn value() -> Money {
-        todo()
+        param!(money())
     }
 
     fn price() -> Money {
-        cmd!("price" money()).map(untup)
+        param!(cmd!("price" money()).map(untup))
     }
 
     // actors
 
     fn entity() -> Entity {
-        cmd!(
-            "entity"
-            ident()
-        )
-        .map(|(name,)| Entity { name })
+        cmd!("entity" ident())
+            .map(|(name,)| Entity { name })
     }
 
     fn object() -> Object {
@@ -149,10 +157,10 @@ parser! {
         cmd!(
             "concept"
             ident(),
-            price().or_not(),
+            price() => Parser::or_not,
             cmd!("gtin" gtin()).map(untup) => Parser::or_not,
         )
-        .ignore_then(todo())
+        .map(|(name, default_price, gtin)| Concept { name, default_price, gtin })
     }
 
     fn actor() -> Actor {
@@ -166,27 +174,43 @@ parser! {
     // commands
 
     fn create() -> Create {
-        cmd!("create" actor()).map(|(who,)| Create { who })
+        cmd!("create" actor())
+            .map(|(who,)| Create { who })
     }
 
     fn pay() -> Pay {
-        todo()
+        cmd!("pay" value(), dir())
+            .map(|(amount, who)| Pay { amount, who })
     }
 
     fn deliver() -> Deliver {
-        todo()
+        cmd!(
+            "deliver"
+            product(),
+            price() => Parser::or_not,
+            dir(),
+        )
+        .map(|(what, price, who)| Deliver { what, price, who })
     }
 
     fn purchase() -> Purchase {
-        todo()
+        cmd!(
+            "purchase"
+            product(),
+            price() => Parser::or_not,
+            dir(),
+        )
+        .map(|(what, price, who)| Purchase { what, price, who })
     }
 
     fn stats() -> Stats {
-        todo()
+        choice((keyword("stats"), keyword("statistics"))).map(|_| Stats)
     }
 
     fn balance() -> Balance {
-        todo()
+        choice((keyword("balance"), keyword("bal")))
+            .ignore_then(dir())
+            .map(|between| Balance { between })
     }
 
     fn transfer() -> Transfer {

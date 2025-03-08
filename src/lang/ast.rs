@@ -112,7 +112,6 @@ pub struct Dir {
 }
 
 #[derive(Owned!)]
-#[allow(unused)]
 pub struct Ident(String);
 
 impl Ident {
