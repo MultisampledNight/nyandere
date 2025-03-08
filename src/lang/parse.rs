@@ -45,6 +45,11 @@ macro_rules! parser {
     )*};
 }
 
+/// Returns the contained element for a single-element tuple.
+fn untup<T>((ele,): (T,)) -> T {
+    ele
+}
+
 // complexity rises the further down
 // read the return types as "what will *the parser returned by this function* return"
 // not directly the function itself
@@ -61,11 +66,8 @@ parser! {
         "object"
         ident(),
         // TODO: doesn't this need a space after the ident even if this is the `not` case?
-        cmd!("instance-of" ident()).or_not(),
-    ).map(|(name, instance_of)| Object {
-        name,
-        instance_of: instance_of.map(|(p,)| p),
-    });
+        cmd!("instance-of" ident()).map(untup).or_not(),
+    ).map(|(name, instance_of)| Object { name, instance_of });
 
     fn concept() -> Concept = || todo();
     fn actor() -> Actor = || choice((
