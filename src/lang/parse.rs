@@ -31,7 +31,7 @@ macro_rules! cmd {
 macro_rules! parser {
     ($(
         $( #[$attr:meta] )*
-        $fn_name:ident
+        fn $fn_name:ident
         ($($param_name:ident : $param_type:ty),* $(,)?)
         -> $ret:ty
         = $body:expr
@@ -46,16 +46,18 @@ macro_rules! parser {
 }
 
 // complexity rises the further down
+// read the return types as "what will *the parser returned by this function* return"
+// not directly the function itself
 parser! {
     /// Hard/necessary inline whitespace.
-    hsp() -> () = || inline_whitespace().at_least(1);
-    ident() -> Ident = || chumsky::text::ident().map(Ident::new);
+    fn hsp() -> () = || inline_whitespace().at_least(1);
+    fn ident() -> Ident = || chumsky::text::ident().map(Ident::new);
 
-    entity() -> Entity = || cmd!(
+    fn entity() -> Entity = || cmd!(
         "entity"
         ident()
     ).map(|(name,)| Entity { name });
-    object() -> Object = || cmd!(
+    fn object() -> Object = || cmd!(
         "object"
         ident(),
         // TODO: doesn't this need a space after the ident even if this is the `not` case?
@@ -65,18 +67,18 @@ parser! {
         instance_of: instance_of.map(|(p,)| p),
     });
 
-    concept() -> Concept = || todo();
-    actor() -> Actor = || choice((
+    fn concept() -> Concept = || todo();
+    fn actor() -> Actor = || choice((
         entity().map(Actor::Entity),
         object().map(Actor::Object),
         concept().map(Actor::Concept),
     ));
 
-    create() -> Create = || cmd!("create" actor()).map(|(who,)| Create { who });
-    statement() -> Stmt = || choice((create().map(Stmt::Create), todo()));
+    fn create() -> Create = || cmd!("create" actor()).map(|(who,)| Create { who });
+    fn statement() -> Stmt = || choice((create().map(Stmt::Create), todo()));
 
     /// Upon a `#`, ignore everything until end of line or end of input.
-    comment() -> () = || just('#')
+    fn comment() -> () = || just('#')
         // What can appear in a comment?
         // Lazy since `repeated` is greedy by default
         // (would cause comments to include the next lines as well)
@@ -86,9 +88,9 @@ parser! {
         // Not modeled in the AST.
         .ignored();
 
-    delim() -> () = || choice((newline(), just(';').ignored())).padded();
+    fn delim() -> () = || choice((newline(), just(';').ignored())).padded();
 
-    script() -> Script = || statement()
+    fn script() -> Script = || statement()
         .separated_by(choice((delim(), comment())))
         .allow_leading()
         .allow_trailing()
