@@ -1,7 +1,7 @@
 use chumsky::{
     Parser,
     prelude::*,
-    text::{ident, inline_whitespace, keyword, newline},
+    text::{inline_whitespace, keyword, newline},
 };
 
 use super::ast::*;
@@ -18,8 +18,8 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
 /// *n* arguments lead to the return type of `(T_1, ..., T_n)`.
 macro_rules! cmd {
     // split of 1 vs n is to avoid putting choice at all if there are any arguments
-    ($name:ident ($( $arg_1:expr $(, $arg_n:expr)* $(,)? )?) ) => {
-        keyword(stringify!($name))$(
+    ($name:literal $( $arg_1:expr $(, $arg_n:expr)* $(,)? )? ) => {
+        keyword($name)$(
             .ignore_then(group((
                 hsp().ignore_then($arg_1),
                 $(hsp().ignore_then($arg_n)),*
@@ -28,7 +28,7 @@ macro_rules! cmd {
     };
 }
 
-macro_rules! shorthand {
+macro_rules! parser {
     ($(
         $( #[$attr:meta] )*
         $fn_name:ident
@@ -45,29 +45,38 @@ macro_rules! shorthand {
     )*};
 }
 
-shorthand! {
+// complexity rises the further down
+parser! {
     /// Hard/necessary inline whitespace.
     hsp() -> () = || inline_whitespace().at_least(1);
-}
+    ident() -> Ident = || chumsky::text::ident().map(Ident::new);
 
-pub fn script<'a>() -> impl Parser<'a, &'a str, Script, Ctx<'a>> {
-    let entity = cmd!(entity(ident())).map(|(name,)| Entity {
-        name: Ident::new(name.to_string()),
+    entity() -> Entity = || cmd!(
+        "entity"
+        ident()
+    ).map(|(name,)| Entity { name });
+    object() -> Object = || cmd!(
+        "object"
+        ident(),
+        // TODO: doesn't this need a space after the ident even if this is the `not` case?
+        cmd!("instance-of" ident()).or_not(),
+    ).map(|(name, instance_of)| Object {
+        name,
+        instance_of: instance_of.map(|(p,)| p),
     });
-    let object = todo();
-    let concept = todo();
 
-    let actor = choice((
-        entity.map(Actor::Entity),
-        object.map(Actor::Object),
-        concept.map(Actor::Concept),
+    concept() -> Concept = || todo();
+    actor() -> Actor = || choice((
+        entity().map(Actor::Entity),
+        object().map(Actor::Object),
+        concept().map(Actor::Concept),
     ));
 
-    let create = cmd!(create(actor)).map(|(who,)| Create { who });
-    let statement = choice((create.map(Stmt::Create), todo()));
+    create() -> Create = || cmd!("create" actor()).map(|(who,)| Create { who });
+    statement() -> Stmt = || choice((create().map(Stmt::Create), todo()));
 
-    // Upon a `#`, ignore everything
-    let comment = just('#')
+    /// Upon a `#`, ignore everything until end of line or end of input.
+    comment() -> () = || just('#')
         // What can appear in a comment?
         // Lazy since `repeated` is greedy by default
         // (would cause comments to include the next lines as well)
@@ -77,13 +86,12 @@ pub fn script<'a>() -> impl Parser<'a, &'a str, Script, Ctx<'a>> {
         // Not modeled in the AST.
         .ignored();
 
-    // statement delimiters
-    let delim = choice((newline(), just(';').ignored())).padded();
+    delim() -> () = || choice((newline(), just(';').ignored())).padded();
 
-    statement
-        .separated_by(choice((delim, comment)))
+    script() -> Script = || statement()
+        .separated_by(choice((delim(), comment())))
         .allow_leading()
         .allow_trailing()
         .collect()
-        .map(Script)
+        .map(Script);
 }

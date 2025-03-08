@@ -117,8 +117,8 @@ pub struct Ident(String);
 
 impl Ident {
     /// Use for parsing only.
-    pub(super) fn new(ident: String) -> Self {
-        Self(ident)
+    pub(super) fn new(ident: impl AsRef<str>) -> Self {
+        Self(ident.as_ref().to_string())
     }
 
     pub fn get(&self) -> &str {
