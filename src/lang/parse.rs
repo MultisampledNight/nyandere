@@ -4,6 +4,8 @@ use chumsky::{
     text::{inline_whitespace, keyword, newline},
 };
 
+use crate::ext::Gtin;
+
 use super::ast::*;
 
 pub type Error<'a> = Rich<'a, char, SimpleSpan>;
@@ -31,7 +33,7 @@ macro_rules! cmd {
 macro_rules! parser {
     ($(
         $( #[$attr:meta] )*
-        fn $fn_name:ident
+        $vis:vis fn $fn_name:ident
         ($($param_name:ident : $param_type:ty),* $(,)?)
         -> $ret:ty
         = $body:expr
@@ -53,15 +55,24 @@ fn untup<T>((ele,): (T,)) -> T {
 // complexity rises the further down
 // read the return types as "what will *the parser returned by this function* return"
 // not directly the function itself
+// 
+// for calming the lsp while writing new parsers, consider appending
+// `.ignore_then(todo())`
 parser! {
     /// Hard/necessary inline whitespace.
     fn hsp() -> () = || inline_whitespace().at_least(1);
     fn ident() -> Ident = || chumsky::text::ident().map(Ident::new);
 
+    fn gtin() -> Gtin = || todo();
+    fn money() -> Money = || todo();
+
+    fn price() -> Money = || cmd!("price" money()).map(untup);
+
     fn entity() -> Entity = || cmd!(
         "entity"
         ident()
     ).map(|(name,)| Entity { name });
+
     fn object() -> Object = || cmd!(
         "object"
         ident(),
@@ -69,7 +80,13 @@ parser! {
         cmd!("instance-of" ident()).map(untup).or_not(),
     ).map(|(name, instance_of)| Object { name, instance_of });
 
-    fn concept() -> Concept = || todo();
+    fn concept() -> Concept = || cmd!(
+        "concept"
+        ident(),
+        price().or_not(),
+        cmd!("gtin" gtin()).map(untup).or_not(),
+    ).ignore_then(todo());
+
     fn actor() -> Actor = || choice((
         entity().map(Actor::Entity),
         object().map(Actor::Object),
@@ -77,7 +94,8 @@ parser! {
     ));
 
     fn create() -> Create = || cmd!("create" actor()).map(|(who,)| Create { who });
-    fn statement() -> Stmt = || choice((create().map(Stmt::Create), todo()));
+
+    fn statement() -> Stmt = || choice((create().map(Stmt::Create),));
 
     /// Upon a `#`, ignore everything until end of line or end of input.
     fn comment() -> () = || just('#')
@@ -92,7 +110,7 @@ parser! {
 
     fn delim() -> () = || choice((newline(), just(';').ignored())).padded();
 
-    fn script() -> Script = || statement()
+    pub fn script() -> Script = || statement()
         .separated_by(choice((delim(), comment())))
         .allow_leading()
         .allow_trailing()
