@@ -84,7 +84,8 @@ parser! {
         cmd!(
             "entity"
             ident()
-        ).map(|(name,)| Entity { name })
+        )
+        .map(|(name,)| Entity { name })
     }
 
     fn object() -> Object {
@@ -93,7 +94,8 @@ parser! {
             ident(),
             // TODO: doesn't this need a space after the ident even if this is the `not` case?
             cmd!("instance-of" ident()).map(untup).or_not(),
-        ).map(|(name, instance_of)| Object { name, instance_of })
+        )
+        .map(|(name, instance_of)| Object { name, instance_of })
     }
 
     fn concept() -> Concept {
@@ -102,14 +104,15 @@ parser! {
             ident(),
             price().or_not(),
             cmd!("gtin" gtin()).map(untup).or_not(),
-        ).ignore_then(todo())
+        )
+        .ignore_then(todo())
     }
 
     fn actor() -> Actor {
         choice((
-                entity().map(Actor::Entity),
-                object().map(Actor::Object),
-                concept().map(Actor::Concept),
+            entity().map(Actor::Entity),
+            object().map(Actor::Object),
+            concept().map(Actor::Concept),
         ))
     }
 
