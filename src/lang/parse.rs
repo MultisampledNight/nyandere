@@ -13,13 +13,33 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
     script().parse(src)
 }
 
+/// Takes a command discriminant before the parens
+/// and arguments in the parens, returning a parser for it.
+/// *n* arguments lead to the return type of `(T_1, ..., T_n)`.
+macro_rules! cmd {
+    // split of 1 vs n is to avoid putting choice at all if there are any arguments
+    ($name:ident ($( $arg_1:expr $(, $arg_n:expr)* $(,)? )?) ) => {
+        kw(stringify!($name))$(
+            .ignore_then(group((
+                hsp().ignore_then($arg_1),
+                $(hsp().ignore_then($arg_n)),*
+            )))
+        )?
+    };
+}
+
+/// Hard/necessary inline whitespace.
+fn hsp<'a>() -> impl Parser<'a, &'a str, (), Ctx<'a>> {
+    inline_whitespace().at_least(1)
+}
+
+/// Keyword, but yields `()` as output.
+fn kw<'a>(name: &'static str) -> impl Parser<'a, &'a str, (), Ctx<'a>> {
+    keyword(name).ignored()
+}
+
 pub fn script<'a>() -> impl Parser<'a, &'a str, Script, Ctx<'a>> {
-    let kw = |name| keyword(name).ignored();
-
-    // Hard/necessary inline whitespace
-    let hsp = inline_whitespace().at_least(1);
-
-    let entity = group((kw("entity"), hsp, ident())).map(|(_, _, name): (_, _, &str)| Entity {
+    let entity = cmd!(entity(ident())).map(|(name,)| Entity {
         name: Ident::new(name.to_string()),
     });
     let object = todo();
@@ -31,7 +51,7 @@ pub fn script<'a>() -> impl Parser<'a, &'a str, Script, Ctx<'a>> {
         concept.map(Actor::Concept),
     ));
 
-    let create = group((kw("create"), hsp, actor)).map(|(_, _, who)| Create { who });
+    let create = cmd!(create(actor)).map(|(who,)| Create { who });
     let statement = choice((create.map(Stmt::Create), todo()));
 
     // Upon a `#`, ignore everything
