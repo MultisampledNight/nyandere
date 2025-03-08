@@ -128,4 +128,7 @@ impl Ident {
 
 /// Number of cents.
 #[derive(Common!)]
-pub struct Money(pub u64);
+pub struct Money(pub Natural);
+
+/// Natural number (including 0).
+pub type Natural = u64;

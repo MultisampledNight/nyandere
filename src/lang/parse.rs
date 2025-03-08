@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use chumsky::{
     Parser,
     prelude::*,
@@ -69,6 +71,8 @@ fn untup<T>((ele,): (T,)) -> T {
 // - for calming the lsp while writing new parsers, consider appending
 //   `.ignore_then(todo())`
 parser! {
+    // basics
+
     /// Hard/necessary inline whitespace.
     fn hsp() -> () {
         inline_whitespace().at_least(1)
@@ -78,7 +82,17 @@ parser! {
         chumsky::text::ident().map(Ident::new)
     }
 
+    // literals
+
     fn gtin() -> Gtin {
+        todo()
+    }
+
+    fn cents() -> Money {
+        todo()
+    }
+
+    fn euros() -> Money {
         todo()
     }
 
@@ -86,9 +100,33 @@ parser! {
         todo()
     }
 
+    // parameters
+    
+    fn from() -> Ident {
+        todo()
+    }
+
+    fn to() -> Ident {
+        todo()
+    }
+
+    fn dir() -> Dir {
+        todo()
+    }
+
+    fn product() -> Product {
+        todo()
+    }
+
+    fn value() -> Money {
+        todo()
+    }
+
     fn price() -> Money {
         cmd!("price" money()).map(untup)
     }
+
+    // actors
 
     fn entity() -> Entity {
         cmd!(
@@ -125,13 +163,56 @@ parser! {
         ))
     }
 
+    // commands
+
     fn create() -> Create {
         cmd!("create" actor()).map(|(who,)| Create { who })
     }
 
-    fn statement() -> Stmt {
-        choice((create().map(Stmt::Create),))
+    fn pay() -> Pay {
+        todo()
     }
+
+    fn deliver() -> Deliver {
+        todo()
+    }
+
+    fn purchase() -> Purchase {
+        todo()
+    }
+
+    fn stats() -> Stats {
+        todo()
+    }
+
+    fn balance() -> Balance {
+        todo()
+    }
+
+    fn transfer() -> Transfer {
+        choice((
+            pay().map(Transfer::Pay),
+            deliver().map(Transfer::Deliver),
+            purchase().map(Transfer::Purchase),
+        ))
+    }
+
+    fn analyze() -> Analyze {
+        choice((
+            stats().map(Analyze::Stats),
+            balance().map(Analyze::Balance),
+        ))
+    }
+
+    fn statement() -> Stmt {
+        choice((
+            create().map(Stmt::Create),
+            transfer().map(Stmt::Transfer),
+            analyze().map(Stmt::Analyze),
+        ))
+    }
+
+    // toplevel
 
     /// Upon a `#`, ignore everything until end of line or end of input.
     fn comment() -> () {
