@@ -19,7 +19,7 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
 macro_rules! cmd {
     // split of 1 vs n is to avoid putting choice at all if there are any arguments
     ($name:ident ($( $arg_1:expr $(, $arg_n:expr)* $(,)? )?) ) => {
-        kw(stringify!($name))$(
+        keyword(stringify!($name))$(
             .ignore_then(group((
                 hsp().ignore_then($arg_1),
                 $(hsp().ignore_then($arg_n)),*
@@ -28,14 +28,26 @@ macro_rules! cmd {
     };
 }
 
-/// Hard/necessary inline whitespace.
-fn hsp<'a>() -> impl Parser<'a, &'a str, (), Ctx<'a>> {
-    inline_whitespace().at_least(1)
+macro_rules! shorthand {
+    ($(
+        $( #[$attr:meta] )*
+        $fn_name:ident
+        ($($param_name:ident : $param_type:ty),* $(,)?)
+        -> $ret:ty
+        = $body:expr
+    );* $(;)?) => {$(
+        $( #[$attr] )*
+        fn $fn_name<'a>($( $param_name : $param_type ),*)
+            -> impl Parser<'a, &'a str, $ret, Ctx<'a>>
+        {
+            ($body)()
+        }
+    )*};
 }
 
-/// Keyword, but yields `()` as output.
-fn kw<'a>(name: &'static str) -> impl Parser<'a, &'a str, (), Ctx<'a>> {
-    keyword(name).ignored()
+shorthand! {
+    /// Hard/necessary inline whitespace.
+    hsp() -> () = || inline_whitespace().at_least(1);
 }
 
 pub fn script<'a>() -> impl Parser<'a, &'a str, Script, Ctx<'a>> {
