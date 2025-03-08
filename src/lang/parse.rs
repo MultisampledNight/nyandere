@@ -36,13 +36,13 @@ macro_rules! parser {
         $vis:vis fn $fn_name:ident
         ($($param_name:ident : $param_type:ty),* $(,)?)
         -> $ret:ty
-        = $body:expr
-    );* $(;)?) => {$(
+        { $body:expr }
+    )*) => {$(
         $( #[$attr] )*
         fn $fn_name<'a>($( $param_name : $param_type ),*)
             -> impl Parser<'a, &'a str, $ret, Ctx<'a>>
         {
-            ($body)()
+            $body
         }
     )*};
 }
@@ -55,65 +55,95 @@ fn untup<T>((ele,): (T,)) -> T {
 // complexity rises the further down
 // read the return types as "what will *the parser returned by this function* return"
 // not directly the function itself
-// 
+//
 // for calming the lsp while writing new parsers, consider appending
 // `.ignore_then(todo())`
 parser! {
     /// Hard/necessary inline whitespace.
-    fn hsp() -> () = || inline_whitespace().at_least(1);
-    fn ident() -> Ident = || chumsky::text::ident().map(Ident::new);
+    fn hsp() -> () {
+        inline_whitespace().at_least(1)
+    }
 
-    fn gtin() -> Gtin = || todo();
-    fn money() -> Money = || todo();
+    fn ident() -> Ident {
+        chumsky::text::ident().map(Ident::new)
+    }
 
-    fn price() -> Money = || cmd!("price" money()).map(untup);
+    fn gtin() -> Gtin {
+        todo()
+    }
 
-    fn entity() -> Entity = || cmd!(
-        "entity"
-        ident()
-    ).map(|(name,)| Entity { name });
+    fn money() -> Money {
+        todo()
+    }
 
-    fn object() -> Object = || cmd!(
-        "object"
-        ident(),
-        // TODO: doesn't this need a space after the ident even if this is the `not` case?
-        cmd!("instance-of" ident()).map(untup).or_not(),
-    ).map(|(name, instance_of)| Object { name, instance_of });
+    fn price() -> Money {
+        cmd!("price" money()).map(untup)
+    }
 
-    fn concept() -> Concept = || cmd!(
-        "concept"
-        ident(),
-        price().or_not(),
-        cmd!("gtin" gtin()).map(untup).or_not(),
-    ).ignore_then(todo());
+    fn entity() -> Entity {
+        cmd!(
+            "entity"
+            ident()
+        ).map(|(name,)| Entity { name })
+    }
 
-    fn actor() -> Actor = || choice((
-        entity().map(Actor::Entity),
-        object().map(Actor::Object),
-        concept().map(Actor::Concept),
-    ));
+    fn object() -> Object {
+        cmd!(
+            "object"
+            ident(),
+            // TODO: doesn't this need a space after the ident even if this is the `not` case?
+            cmd!("instance-of" ident()).map(untup).or_not(),
+        ).map(|(name, instance_of)| Object { name, instance_of })
+    }
 
-    fn create() -> Create = || cmd!("create" actor()).map(|(who,)| Create { who });
+    fn concept() -> Concept {
+        cmd!(
+            "concept"
+            ident(),
+            price().or_not(),
+            cmd!("gtin" gtin()).map(untup).or_not(),
+        ).ignore_then(todo())
+    }
 
-    fn statement() -> Stmt = || choice((create().map(Stmt::Create),));
+    fn actor() -> Actor {
+        choice((
+                entity().map(Actor::Entity),
+                object().map(Actor::Object),
+                concept().map(Actor::Concept),
+        ))
+    }
+
+    fn create() -> Create {
+        cmd!("create" actor()).map(|(who,)| Create { who })
+    }
+
+    fn statement() -> Stmt {
+        choice((create().map(Stmt::Create),))
+    }
 
     /// Upon a `#`, ignore everything until end of line or end of input.
-    fn comment() -> () = || just('#')
-        // What can appear in a comment?
-        // Lazy since `repeated` is greedy by default
-        // (would cause comments to include the next lines as well)
-        .then(any().repeated().lazy())
-        // How can comments be ended?
-        .then(choice((newline(), end())))
-        // Not modeled in the AST.
-        .ignored();
+    fn comment() -> () {
+        just('#')
+            // What can appear in a comment?
+            // Lazy since `repeated` is greedy by default
+            // (would cause comments to include the next lines as well)
+            .then(any().repeated().lazy())
+            // How can comments be ended?
+            .then(choice((newline(), end())))
+            // Not modeled in the AST.
+            .ignored()
+    }
 
-    fn delim() -> () = || choice((newline(), just(';').ignored())).padded();
+    fn delim() -> () {
+        choice((newline(), just(';').ignored())).padded()
+    }
 
-    pub fn script() -> Script = || statement()
-        .separated_by(choice((delim(), comment())))
-        .allow_leading()
-        .allow_trailing()
-        .collect()
-        .map(Script);
+    pub fn script() -> Script {
+        statement()
+            .separated_by(choice((delim(), comment())))
+            .allow_leading()
+            .allow_trailing()
+            .collect()
+            .map(Script)
+    }
 }
