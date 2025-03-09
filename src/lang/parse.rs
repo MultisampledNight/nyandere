@@ -42,7 +42,11 @@ macro_rules! cmd {
 /// optionally with post-processing.
 macro_rules! param {
     ($pre:expr $(=> $post:expr)?) => {
-        $(({ $post }))? (hsp().ignore_then({ $pre }))
+        #[allow(clippy::double_parens)]
+        {
+            $(({ $post }))?
+            (hsp().ignore_then({ $pre }))
+        }
     };
 }
 
@@ -234,7 +238,7 @@ pub fn stats<'a>() -> impl P<'a, Stats> {
 
 pub fn balance<'a>() -> impl P<'a, Balance> {
     choice((keyword("balance"), keyword("bal")))
-        .ignore_then(dir())
+        .ignore_then(param!(dir()))
         .map(|between| Balance { between })
 }
 
