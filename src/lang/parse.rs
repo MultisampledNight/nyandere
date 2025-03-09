@@ -274,7 +274,7 @@ pub fn comment<'a>() -> impl E<'a> {
 }
 
 pub fn delim<'a>() -> impl E<'a> {
-    choice((newline(), just(';').ignored())).padded()
+    choice((newline(), just(';').ignored())).padded_by(osp())
 }
 
 pub fn script<'a>() -> impl P<'a, Script> {
