@@ -313,7 +313,7 @@ on the specifics of how to write them.
     Deliver `product` from `from` to `to` and
     immediately also pay back what's needed.
     Shorthand for:
-    
+
     ```
     deliver <product> from <from> to <to>
     pay <money> from <to> to <from>
@@ -328,7 +328,7 @@ on the specifics of how to write them.
   [
     Analyzes all payments and deliveries made.
     Emitted are:
-    
+
     - Money spent in total
     - Count of deliveries
     - Quartiles of money spent over purchases
@@ -478,7 +478,7 @@ for GTIN-14:
     width: 100%,
     $
       #fade("idx:") #h(0.75em) &&#indices \
-  "code:" #h(0.75em) &&#digits
+      "code:" #h(0.75em) &&#digits
     $,
   )
 }
@@ -499,9 +499,9 @@ for GTIN-14:
 
 = Todo
 
-- [ ] Write parser
-- [ ] Write business logic
-- [ ] Introduce `import` command for sourcing another file
++ [x] Write parser
++ [ ] Write business logic
++ [ ] Introduce `import` command for sourcing another file
   - Pretty much essential for keeping product databases
-- [o] Write REPL
++ [o] Write REPL
 
