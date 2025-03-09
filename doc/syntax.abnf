@@ -44,7 +44,7 @@ to = hsp "to" hsp ident
 money = cents / euros
 
 cents = nat [osp sign-ct]
-euros = (decimal [osp sign-eur]) / (nat osp sign-eur)
+euros = (decimal / nat) osp sign-eur
 
 sign-eur = "€" / "eur" / "EUR"
 sign-ct = "¢" / "ct" / "cents"

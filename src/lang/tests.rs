@@ -4,13 +4,16 @@ use chumsky::Parser;
 
 use super::{ast::*, parse::*};
 
-fn assert<'a, T: fmt::Debug + PartialEq>(parser: impl P<'a, T>, src: &'a str, intended: T) {
+fn assert<'a, T>(parser: impl P<'a, T>, src: &'a str, intended: T)
+where
+    T: fmt::Debug + PartialEq,
+{
     let output = parser.parse(src).unwrap();
     assert_eq!(output, intended);
 }
 
 #[test]
-fn snapshot() {
+fn basic() {
     assert(
         comment(),
         "# this is one single comment — even with ✨ special ✨ emojis",
@@ -27,4 +30,19 @@ fn snapshot() {
             },
         },
     );
+}
+
+#[test]
+fn stonks() {
+    // all of these should be the same!
+    for src in ["1337", "1337¢", "1337 ct", "13.37€"] {
+        assert(money(), src, Money(1337u16.into()));
+    }
+
+    // what about a non-fractional euro?
+    assert(money(), "1 EUR", Money(100u16.into()));
+
+    // what about absurdly large numbers?
+    let src = u128::MAX.to_string();
+    assert(money(), &src, Money(u128::MAX.into()));
 }

@@ -3,7 +3,7 @@
 use chumsky::{
     Parser,
     prelude::*,
-    text::{inline_whitespace, int, keyword, newline},
+    text::{digits, inline_whitespace, int, keyword, newline},
 };
 
 use crate::ext::Gtin;
@@ -93,6 +93,22 @@ pub fn nat<'a>() -> impl P<'a, Natural> {
         .unwrapped()
 }
 
+/// Allows exactly 2 fractional digits,
+/// returns them just left-shifted by 2 digits though
+/// (as if the dot was not there).
+pub fn decimal<'a>() -> impl P<'a, Natural> {
+    let two_digit_num = digits(10)
+        .exactly(2)
+        .collect::<String>()
+        .map(|src| src.parse::<Natural>())
+        // 2 base10 digits are always parsable as BigUint
+        .unwrapped();
+    nat()
+        .then(just('.').ignore_then(two_digit_num))
+        // left-shift
+        .map(|(whole, frac)| whole * 100u8 + frac)
+}
+
 // literals
 
 pub fn gtin<'a>() -> impl P<'a, Gtin> {
@@ -100,21 +116,21 @@ pub fn gtin<'a>() -> impl P<'a, Gtin> {
 }
 
 pub fn cents<'a>() -> impl P<'a, Money> {
-    nat()
-        .then_ignore(
-            osp()
-                .then(choice((just("cents"), just("ct"), just("¢"))))
-                .or_not(),
-        )
-        .map(Money)
+    let suffix = osp()
+        .then(choice((just("cents"), just("ct"), just("¢"))))
+        .or_not();
+    nat().then_ignore(suffix).map(Money)
 }
 
 pub fn euros<'a>() -> impl P<'a, Money> {
-    todo()
+    let value = choice((decimal(), nat().map(|value| value * 100u8)));
+    let suffix = osp().then(choice((just("EUR"), just("eur"), just("€"))));
+
+    value.then_ignore(suffix).map(Money)
 }
 
 pub fn money<'a>() -> impl P<'a, Money> {
-    choice((cents(), euros()))
+    choice((euros(), cents()))
 }
 
 // parameters
@@ -133,10 +149,6 @@ pub fn dir<'a>() -> impl P<'a, Dir> {
 
 pub fn product<'a>() -> impl P<'a, Product> {
     choice((ident().map(Product::Name), gtin().map(Product::Id)))
-}
-
-pub fn value<'a>() -> impl P<'a, Money> {
-    money()
 }
 
 pub fn price<'a>() -> impl P<'a, Money> {
@@ -187,7 +199,7 @@ pub fn create<'a>() -> impl P<'a, Create> {
 }
 
 pub fn pay<'a>() -> impl P<'a, Pay> {
-    cmd!("pay" value(), dir()).map(|(amount, who)| Pay { amount, who })
+    cmd!("pay" money(), dir()).map(|(amount, who)| Pay { amount, who })
 }
 
 pub fn deliver<'a>() -> impl P<'a, Deliver> {
