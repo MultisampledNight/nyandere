@@ -1,3 +1,7 @@
+#![allow(unused_imports)]
+
+use num_bigint::BigUint;
+
 use crate::{
     aux::{Common, Owned},
     ext::Gtin,
@@ -126,8 +130,8 @@ impl Ident {
 }
 
 /// Number of cents.
-#[derive(Common!)]
+#[derive(Owned!)]
 pub struct Money(pub Natural);
 
 /// Natural number (including 0).
-pub type Natural = u64;
+pub type Natural = BigUint;

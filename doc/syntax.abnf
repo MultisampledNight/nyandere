@@ -43,7 +43,7 @@ to = hsp "to" hsp ident
 ; literals
 money = cents / euros
 
-cents = decimal [osp sign-ct]
+cents = nat [osp sign-ct]
 euros = (decimal [osp sign-eur]) / (nat osp sign-eur)
 
 sign-eur = "€" / "eur" / "EUR"
@@ -56,7 +56,7 @@ gtin = *14DIGIT
 ident = ? Default Identifier as per https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax ?
 
 decimal = nat "." 2DIGIT
-nat = 1*DIGIT
+nat = (nonzero *DIGIT) / "0"
 
 ; whitespace
 ; Statement delimiter.
@@ -69,4 +69,5 @@ hsp = 1*WSP
 
 ; one-character
 alnum = ALPHA / DIGIT
+nonzero = %x31-39
 

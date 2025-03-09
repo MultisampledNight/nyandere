@@ -3,7 +3,7 @@
 use chumsky::{
     Parser,
     prelude::*,
-    text::{inline_whitespace, keyword, newline},
+    text::{inline_whitespace, int, keyword, newline},
 };
 
 use crate::ext::Gtin;
@@ -42,7 +42,7 @@ macro_rules! cmd {
 /// optionally with post-processing.
 macro_rules! param {
     ($pre:expr $(=> $post:expr)?) => {
-        $(($post))? (hsp().ignore_then($pre))
+        $(({ $post }))? (hsp().ignore_then({ $pre }))
     };
 }
 
@@ -86,8 +86,20 @@ parser! {
         inline_whitespace().at_least(1)
     }
 
+    /// Optional inline whitespace.
+    fn osp() -> () {
+        inline_whitespace()
+    }
+
     fn ident() -> Ident {
         chumsky::text::ident().map(Ident::new)
+    }
+
+    fn nat() -> Natural {
+        int(10)
+            .map(str::parse)
+            // expecting the int parser to only accept valid ints
+            .unwrapped()
     }
 
     // literals
@@ -97,7 +109,13 @@ parser! {
     }
 
     fn cents() -> Money {
-        todo()
+        nat()
+            .then_ignore(
+                osp()
+                    .then(choice((just("cents"), just("ct"), just("¢"))))
+                    .or_not(),
+            )
+            .map(Money)
     }
 
     fn euros() -> Money {
@@ -105,36 +123,36 @@ parser! {
     }
 
     fn money() -> Money {
-        todo()
+        choice((cents(), euros()))
     }
 
     // parameters
 
     fn from() -> Ident {
-        param!((cmd!("from" ident())).map(untup))
+        cmd!("from" ident()).map(untup)
     }
 
     fn to() -> Ident {
-        param!((cmd!("to" ident())).map(untup))
+        cmd!("to" ident()).map(untup)
     }
 
     fn dir() -> Dir {
-        group((from(), to())).map(|(from, to)| Dir { from, to })
+        group((from(), hsp(), to())).map(|(from, _, to)| Dir { from, to })
     }
 
     fn product() -> Product {
-        param!(choice((
+        choice((
             ident().map(Product::Name),
             gtin().map(Product::Id),
-        )))
+        ))
     }
 
     fn value() -> Money {
-        param!(money())
+        money()
     }
 
     fn price() -> Money {
-        param!(cmd!("price" money()).map(untup))
+        cmd!("price" money()).map(untup)
     }
 
     // actors
@@ -160,7 +178,11 @@ parser! {
             price() => Parser::or_not,
             cmd!("gtin" gtin()).map(untup) => Parser::or_not,
         )
-        .map(|(name, default_price, gtin)| Concept { name, default_price, gtin })
+        .map(|(name, default_price, gtin)| Concept {
+            name,
+            default_price,
+            gtin,
+        })
     }
 
     fn actor() -> Actor {
@@ -257,7 +279,7 @@ parser! {
 
     pub fn script() -> Script {
         statement()
-            .padded_by(inline_whitespace())
+            .padded_by(osp())
             .separated_by(choice((delim(), comment())))
             .allow_leading()
             .allow_trailing()
