@@ -56,7 +56,7 @@ pub trait P<'a, Node>: Parser<'a, &'a str, Node, Ctx<'a>> {}
 impl<'a, Node, T> P<'a, Node> for T where T: Parser<'a, &'a str, Node, Ctx<'a>> {}
 
 /// Shorthand for `P<'a, ()>`.
-trait E<'a>: P<'a, ()> {}
+pub trait E<'a>: P<'a, ()> {}
 impl<'a, T> E<'a> for T where T: P<'a, ()> {}
 
 // complexity rises the further down
@@ -82,11 +82,11 @@ fn osp<'a>() -> impl E<'a> {
     inline_whitespace()
 }
 
-fn ident<'a>() -> impl P<'a, Ident> {
+pub fn ident<'a>() -> impl P<'a, Ident> {
     chumsky::text::ident().map(Ident::new)
 }
 
-fn nat<'a>() -> impl P<'a, Natural> {
+pub fn nat<'a>() -> impl P<'a, Natural> {
     int(10)
         .map(str::parse)
         // expecting the int parser to only accept valid ints
@@ -95,11 +95,11 @@ fn nat<'a>() -> impl P<'a, Natural> {
 
 // literals
 
-fn gtin<'a>() -> impl P<'a, Gtin> {
+pub fn gtin<'a>() -> impl P<'a, Gtin> {
     todo()
 }
 
-fn cents<'a>() -> impl P<'a, Money> {
+pub fn cents<'a>() -> impl P<'a, Money> {
     nat()
         .then_ignore(
             osp()
@@ -109,47 +109,47 @@ fn cents<'a>() -> impl P<'a, Money> {
         .map(Money)
 }
 
-fn euros<'a>() -> impl P<'a, Money> {
+pub fn euros<'a>() -> impl P<'a, Money> {
     todo()
 }
 
-fn money<'a>() -> impl P<'a, Money> {
+pub fn money<'a>() -> impl P<'a, Money> {
     choice((cents(), euros()))
 }
 
 // parameters
 
-fn from<'a>() -> impl P<'a, Ident> {
+pub fn from<'a>() -> impl P<'a, Ident> {
     cmd!("from" ident()).map(untup)
 }
 
-fn to<'a>() -> impl P<'a, Ident> {
+pub fn to<'a>() -> impl P<'a, Ident> {
     cmd!("to" ident()).map(untup)
 }
 
-fn dir<'a>() -> impl P<'a, Dir> {
+pub fn dir<'a>() -> impl P<'a, Dir> {
     group((from(), hsp(), to())).map(|(from, _, to)| Dir { from, to })
 }
 
-fn product<'a>() -> impl P<'a, Product> {
+pub fn product<'a>() -> impl P<'a, Product> {
     choice((ident().map(Product::Name), gtin().map(Product::Id)))
 }
 
-fn value<'a>() -> impl P<'a, Money> {
+pub fn value<'a>() -> impl P<'a, Money> {
     money()
 }
 
-fn price<'a>() -> impl P<'a, Money> {
+pub fn price<'a>() -> impl P<'a, Money> {
     cmd!("price" money()).map(untup)
 }
 
 // actors
 
-fn entity<'a>() -> impl P<'a, Entity> {
+pub fn entity<'a>() -> impl P<'a, Entity> {
     cmd!("entity" ident()).map(|(name,)| Entity { name })
 }
 
-fn object<'a>() -> impl P<'a, Object> {
+pub fn object<'a>() -> impl P<'a, Object> {
     cmd!(
         "object"
         ident(),
@@ -158,7 +158,7 @@ fn object<'a>() -> impl P<'a, Object> {
     .map(|(name, parent)| Object { name, parent })
 }
 
-fn concept<'a>() -> impl P<'a, Concept> {
+pub fn concept<'a>() -> impl P<'a, Concept> {
     cmd!(
         "concept"
         ident(),
@@ -172,7 +172,7 @@ fn concept<'a>() -> impl P<'a, Concept> {
     })
 }
 
-fn actor<'a>() -> impl P<'a, Actor> {
+pub fn actor<'a>() -> impl P<'a, Actor> {
     choice((
         entity().map(Actor::Entity),
         object().map(Actor::Object),
@@ -182,15 +182,15 @@ fn actor<'a>() -> impl P<'a, Actor> {
 
 // commands
 
-fn create<'a>() -> impl P<'a, Create> {
+pub fn create<'a>() -> impl P<'a, Create> {
     cmd!("create" actor()).map(|(who,)| Create { who })
 }
 
-fn pay<'a>() -> impl P<'a, Pay> {
+pub fn pay<'a>() -> impl P<'a, Pay> {
     cmd!("pay" value(), dir()).map(|(amount, who)| Pay { amount, who })
 }
 
-fn deliver<'a>() -> impl P<'a, Deliver> {
+pub fn deliver<'a>() -> impl P<'a, Deliver> {
     cmd!(
         "deliver"
         product(),
@@ -200,7 +200,7 @@ fn deliver<'a>() -> impl P<'a, Deliver> {
     .map(|(what, price, who)| Deliver { what, price, who })
 }
 
-fn purchase<'a>() -> impl P<'a, Purchase> {
+pub fn purchase<'a>() -> impl P<'a, Purchase> {
     cmd!(
         "purchase"
         product(),
@@ -210,17 +210,17 @@ fn purchase<'a>() -> impl P<'a, Purchase> {
     .map(|(what, price, who)| Purchase { what, price, who })
 }
 
-fn stats<'a>() -> impl P<'a, Stats> {
+pub fn stats<'a>() -> impl P<'a, Stats> {
     choice((keyword("stats"), keyword("statistics"))).map(|_| Stats)
 }
 
-fn balance<'a>() -> impl P<'a, Balance> {
+pub fn balance<'a>() -> impl P<'a, Balance> {
     choice((keyword("balance"), keyword("bal")))
         .ignore_then(dir())
         .map(|between| Balance { between })
 }
 
-fn transfer<'a>() -> impl P<'a, Transfer> {
+pub fn transfer<'a>() -> impl P<'a, Transfer> {
     choice((
         pay().map(Transfer::Pay),
         deliver().map(Transfer::Deliver),
@@ -228,11 +228,11 @@ fn transfer<'a>() -> impl P<'a, Transfer> {
     ))
 }
 
-fn analyze<'a>() -> impl P<'a, Analyze> {
+pub fn analyze<'a>() -> impl P<'a, Analyze> {
     choice((stats().map(Analyze::Stats), balance().map(Analyze::Balance)))
 }
 
-fn statement<'a>() -> impl P<'a, Stmt> {
+pub fn statement<'a>() -> impl P<'a, Stmt> {
     choice((
         create().map(Stmt::Create),
         transfer().map(Stmt::Transfer),
@@ -243,7 +243,7 @@ fn statement<'a>() -> impl P<'a, Stmt> {
 // toplevel
 
 /// Upon a `#`, ignore everything until end of line or end of input.
-fn comment<'a>() -> impl E<'a> {
+pub fn comment<'a>() -> impl E<'a> {
     just('#')
         // What can appear in a comment?
         // Lazy since `repeated` is greedy by default
@@ -255,7 +255,7 @@ fn comment<'a>() -> impl E<'a> {
         .ignored()
 }
 
-fn delim<'a>() -> impl E<'a> {
+pub fn delim<'a>() -> impl E<'a> {
     choice((newline(), just(';').ignored())).padded()
 }
 
