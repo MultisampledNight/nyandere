@@ -2,7 +2,7 @@ use std::fmt;
 
 use chumsky::{Parser, prelude::*};
 
-use crate::ext::Gtin;
+use crate::ext::{Gtin, Money};
 
 use super::{ast::*, parse::*};
 

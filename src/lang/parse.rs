@@ -6,7 +6,7 @@ use chumsky::{
     text::{digits, inline_whitespace, int, keyword, newline},
 };
 
-use crate::ext::Gtin;
+use crate::ext::{Gtin, Money, Natural};
 
 use super::ast::*;
 

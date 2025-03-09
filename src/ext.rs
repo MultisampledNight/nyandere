@@ -2,9 +2,17 @@
 
 use std::{num::ParseIntError, str::FromStr};
 
+use num_bigint::BigUint;
 use thiserror::Error;
 
 use crate::aux::{Common, Owned};
+
+/// Count of european cents.
+#[derive(Owned!)]
+pub struct Money(pub Natural);
+
+/// Natural number (including 0).
+pub type Natural = BigUint;
 
 /// Global trade item number. The number behind the barcode you find in stores.
 ///
