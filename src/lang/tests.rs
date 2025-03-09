@@ -1,6 +1,6 @@
 use std::fmt;
 
-use chumsky::Parser;
+use crate::ext::Gtin;
 
 use super::{ast::*, parse::*};
 
@@ -14,20 +14,32 @@ where
 
 #[test]
 fn basic() {
+    let a = || Ident::new("A");
+    let b = || Ident::new("B");
+    let gtin = 12345678901234;
+
     assert(
         comment(),
         "# this is one single comment — even with ✨ special ✨ emojis",
         (),
     );
+
     assert(
         pay(),
         "pay 30ct from A to B",
         Pay {
             amount: Money(30u8.into()),
-            who: Dir {
-                from: Ident::new("A"),
-                to: Ident::new("B"),
-            },
+            who: Dir { from: a(), to: b() },
+        },
+    );
+
+    assert(
+        deliver(),
+        &format!("deliver {gtin} price 1€ from A to B"),
+        Deliver {
+            what: Product::Id(Gtin::new(gtin).unwrap()),
+            who: Dir { from: a(), to: b() },
+            price: Some(Money(100u8.into())),
         },
     );
 }

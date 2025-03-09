@@ -50,7 +50,7 @@ sign-eur = "€" / "eur" / "EUR"
 sign-ct = "¢" / "ct" / "cents"
 
 ; not entirely correct but eh
-gtin = *14DIGIT
+gtin = 8*14DIGIT
 
 ; basics
 ident = ? Default Identifier as per https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax ?

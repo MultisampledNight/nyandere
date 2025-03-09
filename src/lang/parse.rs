@@ -99,8 +99,8 @@ pub fn nat<'a>() -> impl P<'a, Natural> {
 pub fn decimal<'a>() -> impl P<'a, Natural> {
     let two_digit_num = digits(10)
         .exactly(2)
-        .collect::<String>()
-        .map(|src| src.parse::<Natural>())
+        .collect()
+        .map(|src: String| src.parse::<Natural>())
         // 2 base10 digits are always parsable as BigUint
         .unwrapped();
     nat()
@@ -112,7 +112,13 @@ pub fn decimal<'a>() -> impl P<'a, Natural> {
 // literals
 
 pub fn gtin<'a>() -> impl P<'a, Gtin> {
-    todo()
+    digits(10)
+        .at_least(8)
+        .at_most(14)
+        .collect()
+        .map(|src: String| src.parse())
+        // GTINs can be at most 14 digits long, both max 14 and digits are fulfilled above
+        .unwrapped()
 }
 
 pub fn cents<'a>() -> impl P<'a, Money> {

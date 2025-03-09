@@ -33,6 +33,22 @@ impl Gtin {
     /// The largest possible GTIN with 14 digits. For now, that is.
     const MAX: Self = Self(10u64.pow(14) - 1);
 
+    /// Interpret the integer as-is as GTIN.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the integer is longer than 14 digits.
+    pub fn new(source: u64) -> Result<Self, TooLongError> {
+        if source > Self::MAX.0 {
+            return Err(TooLongError {
+                orig: source,
+                n: digits(source),
+            });
+        }
+
+        Ok(Self(source))
+    }
+
     pub fn get(&self) -> u64 {
         self.0
     }
@@ -42,12 +58,7 @@ impl FromStr for Gtin {
     type Err = GtinParseError;
     fn from_str(source: &str) -> Result<Self, Self::Err> {
         let source = source.parse()?;
-
-        if source > Self::MAX.0 {
-            return Err(Self::Err::TooLong { n: digits(source) });
-        }
-
-        Ok(Self(source))
+        Self::new(source).map_err(GtinParseError::TooLong)
     }
 }
 
@@ -60,6 +71,13 @@ fn digits(n: u64) -> u32 {
 pub enum GtinParseError {
     #[error("couldn't parse as an integer: {0}")]
     ExpectedInteger(#[from] ParseIntError),
-    #[error("contains {n} digits while longest form can only contain 14")]
-    TooLong { n: u32 },
+    #[error("valid int, but too long: {0}")]
+    TooLong(TooLongError),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+#[error("`{orig}` contains {n} digits while longest form can only contain 14")]
+pub struct TooLongError {
+    pub orig: u64,
+    pub n: u32,
 }
