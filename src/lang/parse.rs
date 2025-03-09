@@ -23,12 +23,15 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
 macro_rules! cmd {
     // split of 1 vs n is to avoid putting choice at all if there are any arguments
     (
-        $name:literal $( :
+        $($name:literal)|+ $( :
             $arg_1:expr $(=> $arg_1_post:expr)?
             $(, $arg_n:expr $(=> $arg_n_post:expr)? )* $(,)?
         )?
     ) => {
-        keyword($name)$(
+        choice((
+            $(keyword($name),)*
+        ))
+        $(
             .ignore_then(group((
                 param!($arg_1 $(=> $arg_1_post)?),
                 $(param!($arg_n $(=> $arg_n_post)?)),*
@@ -232,13 +235,11 @@ pub fn purchase<'a>() -> impl P<'a, Purchase> {
 }
 
 pub fn stats<'a>() -> impl P<'a, Stats> {
-    choice((keyword("stats"), keyword("statistics"))).to(Stats)
+    cmd!("stats" | "statistics").to(Stats)
 }
 
 pub fn balance<'a>() -> impl P<'a, Balance> {
-    choice((keyword("balance"), keyword("bal")))
-        .ignore_then(param!(dir()))
-        .map(|between| Balance { between })
+    cmd!("balance" | "bal" : dir()).map(|(between,)| Balance { between })
 }
 
 pub fn transfer<'a>() -> impl P<'a, Transfer> {
