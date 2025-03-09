@@ -23,8 +23,7 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
 macro_rules! cmd {
     // split of 1 vs n is to avoid putting choice at all if there are any arguments
     (
-        $name:literal
-        $(
+        $name:literal $( :
             $arg_1:expr $(=> $arg_1_post:expr)?
             $(, $arg_n:expr $(=> $arg_n_post:expr)? )* $(,)?
         )?
@@ -146,11 +145,11 @@ pub fn money<'a>() -> impl P<'a, Money> {
 // parameters
 
 pub fn from<'a>() -> impl P<'a, Ident> {
-    cmd!("from" ident()).map(untup)
+    cmd!("from" : ident()).map(untup)
 }
 
 pub fn to<'a>() -> impl P<'a, Ident> {
-    cmd!("to" ident()).map(untup)
+    cmd!("to" : ident()).map(untup)
 }
 
 pub fn dir<'a>() -> impl P<'a, Dir> {
@@ -162,30 +161,30 @@ pub fn product<'a>() -> impl P<'a, Product> {
 }
 
 pub fn price<'a>() -> impl P<'a, Money> {
-    cmd!("price" money()).map(untup)
+    cmd!("price" : money()).map(untup)
 }
 
 // actors
 
 pub fn entity<'a>() -> impl P<'a, Entity> {
-    cmd!("entity" ident()).map(|(name,)| Entity { name })
+    cmd!("entity" : ident()).map(|(name,)| Entity { name })
 }
 
 pub fn object<'a>() -> impl P<'a, Object> {
     cmd!(
-        "object"
+        "object" :
         ident(),
-        cmd!("parent" ident()).map(untup) => Parser::or_not,
+        cmd!("parent" : ident()).map(untup) => Parser::or_not,
     )
     .map(|(name, parent)| Object { name, parent })
 }
 
 pub fn concept<'a>() -> impl P<'a, Concept> {
     cmd!(
-        "concept"
+        "concept" :
         ident(),
         price() => Parser::or_not,
-        cmd!("gtin" gtin()).map(untup) => Parser::or_not,
+        cmd!("gtin" : gtin()).map(untup) => Parser::or_not,
     )
     .map(|(name, default_price, gtin)| Concept {
         name,
@@ -205,16 +204,16 @@ pub fn actor<'a>() -> impl P<'a, Actor> {
 // commands
 
 pub fn create<'a>() -> impl P<'a, Create> {
-    cmd!("create" actor()).map(|(who,)| Create { who })
+    cmd!("create" : actor()).map(|(who,)| Create { who })
 }
 
 pub fn pay<'a>() -> impl P<'a, Pay> {
-    cmd!("pay" money(), dir()).map(|(amount, who)| Pay { amount, who })
+    cmd!("pay" : money(), dir()).map(|(amount, who)| Pay { amount, who })
 }
 
 pub fn deliver<'a>() -> impl P<'a, Deliver> {
     cmd!(
-        "deliver"
+        "deliver" :
         product(),
         price() => Parser::or_not,
         dir(),
@@ -224,7 +223,7 @@ pub fn deliver<'a>() -> impl P<'a, Deliver> {
 
 pub fn purchase<'a>() -> impl P<'a, Purchase> {
     cmd!(
-        "purchase"
+        "purchase" :
         product(),
         price() => Parser::or_not,
         dir(),
