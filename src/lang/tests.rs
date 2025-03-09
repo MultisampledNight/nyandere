@@ -1,5 +1,7 @@
 use std::fmt;
 
+use chumsky::{Parser, prelude::*};
+
 use crate::ext::Gtin;
 
 use super::{ast::*, parse::*};
@@ -19,9 +21,9 @@ fn basic() {
     let gtin = 12345678901234;
 
     assert(
-        comment(),
-        "# this is one single comment — even with ✨ special ✨ emojis",
-        (),
+        comment().ignore_then(just("abc")),
+        "# this is a comment with ✨ special ✨ emojis\nabc",
+        "abc",
     );
 
     assert(

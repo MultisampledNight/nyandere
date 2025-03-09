@@ -88,7 +88,7 @@ pub fn ident<'a>() -> impl P<'a, Ident> {
 
 pub fn nat<'a>() -> impl P<'a, Natural> {
     int(10)
-        .map(str::parse)
+        .from_str()
         // expecting the int parser to only accept valid ints
         .unwrapped()
 }
@@ -115,8 +115,8 @@ pub fn gtin<'a>() -> impl P<'a, Gtin> {
     digits(10)
         .at_least(8)
         .at_most(14)
-        .collect()
-        .map(|src: String| src.parse())
+        .collect::<String>()
+        .from_str()
         // GTINs can be at most 14 digits long, both max 14 and digits are fulfilled above
         .unwrapped()
 }
@@ -229,7 +229,7 @@ pub fn purchase<'a>() -> impl P<'a, Purchase> {
 }
 
 pub fn stats<'a>() -> impl P<'a, Stats> {
-    choice((keyword("stats"), keyword("statistics"))).map(|_| Stats)
+    choice((keyword("stats"), keyword("statistics"))).to(Stats)
 }
 
 pub fn balance<'a>() -> impl P<'a, Balance> {
@@ -266,16 +266,16 @@ pub fn comment<'a>() -> impl E<'a> {
         // What can appear in a comment?
         // Lazy since `repeated` is greedy by default
         // (would cause comments to include the next lines as well)
-        .then(any().repeated().lazy())
+        .then(any().and_is(newline().not()).repeated())
         // How can comments be ended?
-        .then(newline())
+        .then(choice((newline(), end())))
         // Not modeled in the AST.
         .ignored()
 }
 
 pub fn delim<'a>() -> impl E<'a> {
-    osp()
-        .ignore_then(choice((comment(), newline(), just(';').ignored())))
+    choice((comment(), newline(), just(';').ignored()))
+        .padded_by(osp())
         .repeated()
         .at_least(1)
 }
