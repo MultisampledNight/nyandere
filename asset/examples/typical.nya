@@ -1,6 +1,6 @@
+create entity Store # more or less representative of the "external world"
 create entity A
 create entity B
-create entity Store # more or less representative of the "external world"
 
 create concept x price 1€
 create concept y price 2€

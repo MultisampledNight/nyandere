@@ -268,21 +268,24 @@ pub fn comment<'a>() -> impl E<'a> {
         // (would cause comments to include the next lines as well)
         .then(any().repeated().lazy())
         // How can comments be ended?
-        .then(choice((newline(), end())))
+        .then(newline())
         // Not modeled in the AST.
         .ignored()
 }
 
 pub fn delim<'a>() -> impl E<'a> {
-    choice((newline(), just(';').ignored())).padded_by(osp())
+    osp()
+        .ignore_then(choice((comment(), newline(), just(';').ignored())))
+        .repeated()
+        .at_least(1)
 }
 
 pub fn script<'a>() -> impl P<'a, Script> {
     statement()
-        .padded_by(osp())
-        .separated_by(choice((delim(), comment())))
+        .separated_by(delim())
         .allow_leading()
         .allow_trailing()
         .collect()
+        .then_ignore(end())
         .map(Script)
 }
