@@ -1,4 +1,23 @@
-use crate::{aux::Owned, ext::Money};
+//! Parts flying around that already have a concept of "existing".
+//!
+//! # On field privacy
+//!
+//! The fields are all private.
+//! Why?
+//! The answer is type safety.
+//! Actors can only be created by issuing a [`super::cmd::Create`] command
+//! to the runtime.
+//! This implies that the runtime doesn't need to take care of
+//! returning errors about non-existent
+//! [`Entity`]ies, [`Concept`]s or [`Object`]s:
+//! if there is one, it has to exist and hence be created at some point.
+
+use crate::{
+    aux::Owned,
+    ext::{Gtin, Money},
+};
+
+use super::Name;
 
 /// Someone who holds money and deliver things.
 #[derive(Owned!)]
@@ -9,8 +28,9 @@ pub struct Entity {
 /// Designed idea of [`Object`]s.
 #[derive(Owned!)]
 pub struct Concept {
-    pub name: Name,
-    pub default_price: Option<Money>,
+    name: Name,
+    default_price: Option<Money>,
+    gtin: Option<Gtin>,
 }
 
 impl Concept {
@@ -67,7 +87,3 @@ impl Product {
         }
     }
 }
-
-/// Text-based readable name.
-#[derive(Owned!)]
-pub struct Name(pub String);
