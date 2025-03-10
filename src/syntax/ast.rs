@@ -1,3 +1,7 @@
+//! An [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree).
+//!
+//! First layer of abstraction over the source text.
+
 use crate::{
     aux::Owned,
     ext::{Gtin, Money},

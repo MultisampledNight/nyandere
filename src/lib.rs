@@ -1,3 +1,11 @@
+//! # Pipeline
+//!
+//! The general processing pipeline is:
+//!
+//! 1. Load source code as a string.
+//! 2. Parse string into [`syntax::ast`] using [`syntax::parse`].
+//! 3. Evaluate AST using [`model`].
+
 #[macro_use]
 extern crate macro_rules_attribute;
 

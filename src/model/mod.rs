@@ -1,3 +1,5 @@
+//! What is **semantically** valid?
+//!
 //! Construct the world and wrap it into a nice usable interface.
 //!
 //! # Why do [`actor`] and [`cmd`] contain almost identical types?!
