@@ -4,12 +4,12 @@ extern crate macro_rules_attribute;
 pub mod aux;
 pub mod config;
 pub mod ext;
-pub mod lang;
 pub mod model;
+pub mod syntax;
 pub mod ui;
 
 use eyre::{Context, Result};
-use lang::parse;
+use syntax::parse;
 
 pub fn run() -> Result<()> {
     let cfg = config::cli();

@@ -1,6 +1,6 @@
 //! Things to do that somehow interact with actors.
 
-use super::{actor, Name};
+use super::{Name, actor};
 
 use crate::{
     aux::Owned,
