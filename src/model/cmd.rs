@@ -38,6 +38,13 @@ pub enum Command {
 ///     a GTIN it is referred to by.
 ///     This allows using the default price
 ///     when just scanning a GTIN!
+///
+/// # Caveats
+///
+/// Creating another actor with the same name
+/// replaces the previous actor
+/// while also replacing all references
+/// (but not previous payments).
 #[derive(Owned!)]
 pub enum Create {
     Entity(Entity),

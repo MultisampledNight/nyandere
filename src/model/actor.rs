@@ -22,15 +22,15 @@ use super::Name;
 /// Someone who holds money and deliver things.
 #[derive(Owned!)]
 pub struct Entity {
-    name: Name,
+    pub(super) name: Name,
 }
 
 /// Designed idea of [`Object`]s.
 #[derive(Owned!)]
 pub struct Concept {
-    name: Name,
-    default_price: Option<Money>,
-    gtin: Option<Gtin>,
+    pub(super) name: Name,
+    pub(super) default_price: Option<Money>,
+    pub(super) gtin: Option<Gtin>,
 }
 
 impl Concept {
@@ -55,8 +55,8 @@ impl Concept {
 /// Physically holdable something.
 #[derive(Owned!)]
 pub struct Object {
-    name: Option<Name>,
-    parent: Option<Concept>,
+    pub(super) name: Option<Name>,
+    pub(super) parent: Option<Concept>,
 }
 
 impl Object {
