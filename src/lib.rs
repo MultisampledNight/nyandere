@@ -20,13 +20,20 @@ pub mod ui;
 pub use model::runtime::Runtime;
 pub use syntax::ast::Script;
 
-use eyre::{Context, Result};
-use syntax::parse;
+use eyre::{Result, WrapErr, format_err};
 
 pub fn run() -> Result<()> {
     let cfg = config::cli();
-    let source = cfg.source.get().context("while loading source")?;
-    dbg!(parse::parse(&source));
+
+    let script = cfg.source.get().wrap_err("while loading source")?;
+    // TODO: throw the error into ariadne to render with better UX
+    let script = Script::parse(&script)
+        .into_result()
+        .map_err(|orig| format_err!("while parsing source code: {orig:?}"))?;
+
+    let mut runtime = Runtime::new();
+    runtime.run(script).wrap_err("while evaluating")?;
+    dbg!(runtime);
 
     Ok(())
 }

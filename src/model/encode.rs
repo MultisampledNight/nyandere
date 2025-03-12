@@ -15,7 +15,7 @@ impl Runtime {
     /// # Errors
     ///
     /// Returns an error when the statement is semantically invalid,
-    /// see [`EncodeError`] for details.
+    /// see [`Error`] for details.
     pub fn encode<T, U>(&self, source: T) -> Result<U, Error>
     where
         U: Encoded<T>,

@@ -30,7 +30,7 @@ impl Source {
         }
         if let Some(file) = &self.file {
             return fs::read_to_string(file)
-                .with_context(|| format!("tried to read `{}`", file.display()));
+                .wrap_err_with(|| format!("tried to read `{}`", file.display()));
         }
 
         panic!(concat!(

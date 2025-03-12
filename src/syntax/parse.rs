@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+use std::str::FromStr;
+
 use chumsky::{
     Parser,
     prelude::*,
@@ -13,8 +15,11 @@ use super::ast::*;
 pub type Error<'a> = Rich<'a, char, SimpleSpan>;
 pub type Ctx<'a> = extra::Err<Error<'a>>;
 
-pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
-    script().parse(src)
+impl Script {
+    /// [`FromStr::from_str`] but not, since that doesn't allow lifetime restraints.
+    pub fn parse<'text>(source: &'text str) -> ParseResult<Self, Error<'text>> {
+        script().parse(source)
+    }
 }
 
 /// Takes a command discriminant before the parens

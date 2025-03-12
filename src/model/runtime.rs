@@ -51,10 +51,10 @@ impl Runtime {
     /// the runtime is not rolled back
     /// and still holds the state built _until_ the
     /// invalid instruction.
-    pub fn eval(&mut self, script: Script) -> Result<(), encode::Error> {
+    pub fn run(&mut self, script: Script) -> Result<(), encode::Error> {
         for stmt in script.0 {
             let cmd = self.encode(stmt)?;
-            self.run(cmd);
+            self.apply(cmd);
         }
 
         Ok(())
@@ -65,7 +65,7 @@ impl Runtime {
     /// This can never fail, any [`Command`]
     /// ***that is constructed from this instance***
     /// is valid to run at any point after construction!
-    pub fn run(&mut self, cmd: Command) {
+    pub fn apply(&mut self, cmd: Command) {
         use cmd::Command as C;
         match cmd {
             C::Create(create) => self.create(create),
