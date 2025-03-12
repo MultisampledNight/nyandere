@@ -4,11 +4,11 @@
 
 pub mod cmd;
 pub mod encode;
-pub mod state;
+pub mod model;
 
 use cmd::Command;
 use encode::Encoded;
-pub use state::State;
+pub use model::State;
 
 use crate::{Script, aux::NotOrd};
 
@@ -85,12 +85,12 @@ impl Runtime {
             C::Entity(entity) => {
                 self.state
                     .entities
-                    .insert(entity.name.clone(), state::Entity { name: entity.name });
+                    .insert(entity.name.clone(), model::Entity { name: entity.name });
             }
             C::Concept(concept) => {
                 self.state.concepts.insert(
                     concept.name.clone(),
-                    state::Concept {
+                    model::Concept {
                         name: concept.name,
                         default_price: concept.default_price,
                         gtin: concept.gtin,
@@ -100,7 +100,7 @@ impl Runtime {
             C::Object(object) => {
                 self.state.objects.insert(
                     object.name.clone(),
-                    state::Object {
+                    model::Object {
                         name: Some(object.name),
                         parent: object.parent,
                     },

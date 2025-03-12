@@ -5,7 +5,7 @@ use crate::{
     ext::{Gtin, Money},
 };
 
-use super::state;
+use super::model;
 
 /// Do something that makes, modifies or reads.
 #[derive(Owned!)]
@@ -67,7 +67,7 @@ pub struct Concept {
 #[derive(Owned!)]
 pub struct Object {
     pub name: Name,
-    pub parent: Option<state::Concept>,
+    pub parent: Option<model::Concept>,
 }
 
 /// Directed edge between 2 [`Entity`]ies.
