@@ -45,7 +45,7 @@ where
 
 #[derive(Owned!, thiserror::Error)]
 pub enum Error {
-    #[error("unknown {0}")]
+    #[error("unknown actor")]
     UnknownActor(#[from] UnknownActorError),
 }
 
