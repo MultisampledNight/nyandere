@@ -1,4 +1,7 @@
-//! Ideas that exist outside of the world and need to be quite literally imported into nyandere.
+//! Interact and construct the outside world.
+
+pub mod config;
+pub mod ui;
 
 use std::{num::ParseIntError, str::FromStr};
 

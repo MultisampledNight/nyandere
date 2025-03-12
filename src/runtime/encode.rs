@@ -1,28 +1,13 @@
 use crate::{
     aux::Owned,
+    runtime::cmd,
     syntax::ast::{self, Stmt},
 };
 
 use super::{
-    cmd::{self, Command, Name},
-    runtime::Runtime,
+    Runtime,
+    cmd::{Command, Name},
 };
-
-impl Runtime {
-    /// Convert a textually parsed AST (or part of one)
-    /// into a semantically valid and meaningful command (or part of one).
-    ///
-    /// # Errors
-    ///
-    /// Returns an error when the statement is semantically invalid,
-    /// see [`Error`] for details.
-    pub fn encode<T, U>(&self, source: T) -> Result<U, Error>
-    where
-        U: Encoded<T>,
-    {
-        U::encoded(source, self)
-    }
-}
 
 /// [`TryFrom`] but with runtime context. See [`Encode::encode`].
 pub trait Encoded<T>: Sized {
@@ -34,6 +19,7 @@ pub trait Encoded<T>: Sized {
     fn encoded(source: T, runtime: &Runtime) -> Result<Self, Error>;
 }
 
+// conversion is trivial if From is already implemented
 impl<T, U> Encoded<T> for U
 where
     T: Into<U>,

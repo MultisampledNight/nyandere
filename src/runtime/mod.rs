@@ -1,15 +1,16 @@
-use std::collections::HashMap;
+//! Process and understand.
+//!
+//! What is semantically valid?
+
+pub mod cmd;
+pub mod encode;
+pub mod state;
+
+use cmd::Command;
+use encode::Encoded;
+pub use state::State;
 
 use crate::{Script, aux::NotOrd};
-
-use super::{
-    actor,
-    cmd::{self, Command, Name},
-    encode,
-};
-
-// TODO: move [`Runtime`] into its own top-level module with the run vs encodes part split in
-// submodules
 
 #[derive(NotOrd!, Default)]
 pub struct Runtime {
@@ -20,15 +21,6 @@ impl Runtime {
     pub fn state(&self) -> &State {
         &self.state
     }
-}
-
-// TODO: generate this automatically
-#[derive(NotOrd!, Default)]
-pub struct State {
-    // not much use -- yet, that is
-    pub entities: HashMap<Name, actor::Entity>,
-    pub concepts: HashMap<Name, actor::Concept>,
-    pub objects: HashMap<Name, actor::Object>,
 }
 
 impl Runtime {
@@ -60,6 +52,20 @@ impl Runtime {
         Ok(())
     }
 
+    /// Convert a textually parsed AST (or part of one)
+    /// into a semantically valid and meaningful command (or part of one).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the statement is semantically invalid,
+    /// see [`Error`] for details.
+    pub fn encode<T, U>(&self, source: T) -> Result<U, encode::Error>
+    where
+        U: Encoded<T>,
+    {
+        U::encoded(source, self)
+    }
+
     /// Performs one single command.
     ///
     /// This can never fail, any [`Command`]
@@ -79,12 +85,12 @@ impl Runtime {
             C::Entity(entity) => {
                 self.state
                     .entities
-                    .insert(entity.name.clone(), actor::Entity { name: entity.name });
+                    .insert(entity.name.clone(), state::Entity { name: entity.name });
             }
             C::Concept(concept) => {
                 self.state.concepts.insert(
                     concept.name.clone(),
-                    actor::Concept {
+                    state::Concept {
                         name: concept.name,
                         default_price: concept.default_price,
                         gtin: concept.gtin,
@@ -94,7 +100,7 @@ impl Runtime {
             C::Object(object) => {
                 self.state.objects.insert(
                     object.name.clone(),
-                    actor::Object {
+                    state::Object {
                         name: Some(object.name),
                         parent: object.parent,
                     },

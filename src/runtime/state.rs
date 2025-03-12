@@ -1,23 +1,34 @@
-//! Parts flying around that already have a concept of "existing".
+//! Live actors, bundled, cuddled and wrapped up into [`State`].
 //!
 //! # On field privacy
 //!
 //! The fields are all private.
 //! Why?
 //! The answer is type safety.
-//! Actors can only be created by issuing a [`super::cmd::Create`] command
+//! Actors can only be created by issuing a [`cmd::Create`] command
 //! to the runtime.
 //! This implies that the runtime doesn't need to take care of
 //! returning errors about non-existent
 //! [`Entity`]ies, [`Concept`]s or [`Object`]s:
 //! if there is one, it has to exist and hence be created at some point.
 
+use std::collections::HashMap;
+
 use crate::{
-    aux::Owned,
+    aux::{NotOrd, Owned},
     ext::{Gtin, Money},
 };
 
 use super::cmd::Name;
+
+// TODO: generate this automatically
+#[derive(NotOrd!, Default)]
+pub struct State {
+    // not much use -- yet, that is
+    pub entities: HashMap<Name, Entity>,
+    pub concepts: HashMap<Name, Concept>,
+    pub objects: HashMap<Name, Object>,
+}
 
 /// Someone who holds money and deliver things.
 #[derive(Owned!)]

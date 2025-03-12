@@ -1,11 +1,11 @@
 //! Things to do that somehow interact with actors.
 
-use super::actor;
-
 use crate::{
     aux::Owned,
     ext::{Gtin, Money},
 };
+
+use super::state;
 
 /// Do something that makes, modifies or reads.
 #[derive(Owned!)]
@@ -67,7 +67,7 @@ pub struct Concept {
 #[derive(Owned!)]
 pub struct Object {
     pub name: Name,
-    pub parent: Option<actor::Concept>,
+    pub parent: Option<state::Concept>,
 }
 
 /// Directed edge between 2 [`Entity`]ies.

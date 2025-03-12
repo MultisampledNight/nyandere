@@ -11,13 +11,12 @@
 extern crate macro_rules_attribute;
 
 pub mod aux;
-pub mod config;
 pub mod ext;
-pub mod model;
+pub mod runtime;
 pub mod syntax;
-pub mod ui;
 
-pub use model::runtime::Runtime;
+use ext::config;
+pub use runtime::Runtime;
 pub use syntax::ast::Script;
 
 use eyre::{Result, WrapErr, format_err};
