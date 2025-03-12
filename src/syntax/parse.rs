@@ -21,7 +21,7 @@ pub fn parse<'a>(src: &'a str) -> ParseResult<Script, Error<'a>> {
 /// and arguments in the parens, returning a parser for it.
 /// *n* arguments lead to the return type of `(T_1, ..., T_n)`.
 macro_rules! cmd {
-    // split of 1 vs n is to avoid putting choice at all if there are any arguments
+    // split of 1 vs n is to avoid putting choice at all if there are no arguments
     (
         $($name:literal)|+ $( :
             $arg_1:expr $(=> $arg_1_post:expr)?
