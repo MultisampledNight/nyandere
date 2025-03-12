@@ -67,3 +67,41 @@ impl Runtime {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Set, eval};
+
+    #[test]
+    fn create() {
+        let state = eval(
+            "
+            create entity A
+            create entity B
+
+            create concept E price 13.37€ gtin 10000000
+            create object O parent E
+            create object T parent E
+
+            create entity C
+            ",
+        )
+        .unwrap();
+
+        // all entities there?
+        assert_eq!(
+            state.entities.keys().map(AsRef::as_ref).collect::<Set<_>>(),
+            ["A", "B", "C"].into_iter().collect(),
+        );
+
+        assert_eq!(
+            state
+                .objects
+                .into_values()
+                .map(|o| (o.name.unwrap().0, o.parent.unwrap().name.0))
+                .collect::<Set<_>>(),
+            Set::from([("O".into(), "E".into()), ("T".into(), "E".into())])
+        );
+    }
+}

@@ -29,6 +29,9 @@
 #[macro_use]
 extern crate macro_rules_attribute;
 
+pub type Map<K, V> = std::collections::HashMap<K, V>;
+pub type Set<T> = std::collections::HashSet<T>;
+
 pub mod aux;
 pub mod ext;
 pub mod runtime;
@@ -36,6 +39,7 @@ pub mod syntax;
 
 use ext::config;
 pub use runtime::Runtime;
+use runtime::State;
 pub use syntax::ast::Script;
 
 use eyre::{Result, WrapErr, format_err};
@@ -45,13 +49,21 @@ pub fn run() -> Result<()> {
 
     let script = cfg.source.get().wrap_err("while loading source")?;
     // TODO: throw the error into ariadne to render with better UX
-    let script = Script::parse(&script)
+
+    dbg!(eval(script)?);
+
+    Ok(())
+}
+
+/// Parses and runs the given script,
+/// returning the final runtime state.
+pub fn eval(script: impl AsRef<str>) -> Result<State> {
+    let script = Script::parse(script.as_ref())
         .into_result()
         .map_err(|orig| format_err!("while parsing source code: {orig:?}"))?;
 
     let mut runtime = Runtime::new();
     runtime.run(script).wrap_err("while evaluating")?;
-    dbg!(runtime);
 
-    Ok(())
+    Ok(runtime.to_state())
 }

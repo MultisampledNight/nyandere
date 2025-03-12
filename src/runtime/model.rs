@@ -12,9 +12,8 @@
 //! [`Entity`]ies, [`Concept`]s or [`Object`]s:
 //! if there is one, it has to exist and hence be created at some point.
 
-use std::collections::HashMap;
-
 use crate::{
+    Map,
     aux::{NotOrd, Owned},
     ext::{Gtin, Money},
 };
@@ -25,9 +24,9 @@ use super::cmd::Name;
 #[derive(NotOrd!, Default)]
 pub struct State {
     // not much use -- yet, that is
-    pub entities: HashMap<Name, Entity>,
-    pub concepts: HashMap<Name, Concept>,
-    pub objects: HashMap<Name, Object>,
+    pub entities: Map<Name, Entity>,
+    pub concepts: Map<Name, Concept>,
+    pub objects: Map<Name, Object>,
 }
 
 /// Someone who holds money and deliver things.

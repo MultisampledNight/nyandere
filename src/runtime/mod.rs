@@ -8,8 +8,6 @@ pub mod repr;
 
 pub use model::State;
 
-use cmd::Command;
-
 use crate::{Script, aux::NotOrd};
 
 #[derive(NotOrd!, Default)]
@@ -20,6 +18,10 @@ pub struct Runtime {
 impl Runtime {
     pub fn state(&self) -> &State {
         &self.state
+    }
+
+    pub fn to_state(self) -> State {
+        self.state
     }
 }
 
@@ -34,7 +36,7 @@ impl Runtime {
     /// Evaluate a whole parsed [`Script`]
     /// by [representing][Runtime::repr]
     /// every [statement][crate::syntax::ast::Stmt]
-    /// as the corresponding [command][Command]
+    /// as the corresponding [command][cmd::Command]
     /// and running it.
     ///
     /// # Error

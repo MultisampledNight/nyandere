@@ -67,3 +67,9 @@ pub struct Dir {
 /// Text-based readable name.
 #[derive(Owned!)]
 pub struct Name(pub String);
+
+impl AsRef<str> for Name {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
