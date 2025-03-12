@@ -1,5 +1,4 @@
 #import "prelude.typ": *
-#import "gfx.typ"
 
 #let detail(target: [Command], ..args) = table(
   columns: (auto, 1fr),
@@ -354,11 +353,6 @@ on the specifics of how to write them.
 In ABNF:
 
 #raw(read("syntax.abnf"), lang: "abnf", block: true)
-
-
-= Database
-
-#gfx.schema
 
 
 = Example
