@@ -17,7 +17,7 @@ use crate::{
     ext::{Gtin, Money},
 };
 
-use super::Name;
+use super::cmd::Name;
 
 /// Someone who holds money and deliver things.
 #[derive(Owned!)]

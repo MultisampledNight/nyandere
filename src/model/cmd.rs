@@ -1,6 +1,6 @@
 //! Things to do that somehow interact with actors.
 
-use super::{Name, actor};
+use super::actor;
 
 use crate::{
     aux::Owned,
@@ -76,3 +76,7 @@ pub struct Dir {
     pub from: Entity,
     pub to: Entity,
 }
+
+/// Text-based readable name.
+#[derive(Owned!)]
+pub struct Name(pub String);

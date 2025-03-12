@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{ext::Money, model::Name};
+use crate::{ext::Money, model::cmd::Name};
 
 impl fmt::Display for Money {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

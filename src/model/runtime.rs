@@ -1,8 +1,15 @@
 use std::collections::HashMap;
 
-use crate::aux::NotOrd;
+use crate::{Script, aux::NotOrd};
 
-use super::{Name, actor, cmd};
+use super::{
+    actor,
+    cmd::{self, Command, Name},
+    encode,
+};
+
+// TODO: move [`Runtime`] into its own top-level module with the run vs encodes part split in
+// submodules
 
 #[derive(NotOrd!, Default)]
 pub struct Runtime {
@@ -32,8 +39,33 @@ impl Runtime {
         Self::default()
     }
 
-    /// Runs one command.
-    pub fn run(&mut self, cmd: cmd::Command) {
+    /// Evaluate a whole parsed [`Script`]
+    /// by [encoding][Runtime::encode]
+    /// every [statement][crate::syntax::ast::Stmt]
+    /// into the corresponding [command][Command]
+    /// and running it.
+    ///
+    /// # Error
+    ///
+    /// Note that in the case of an error,
+    /// the runtime is not rolled back
+    /// and still holds the state built _until_ the
+    /// invalid instruction.
+    pub fn eval(&mut self, script: Script) -> Result<(), encode::Error> {
+        for stmt in script.0 {
+            let cmd = self.encode(stmt)?;
+            self.run(cmd);
+        }
+
+        Ok(())
+    }
+
+    /// Performs one single command.
+    ///
+    /// This can never fail, any [`Command`]
+    /// ***that is constructed from this instance***
+    /// is valid to run at any point after construction!
+    pub fn run(&mut self, cmd: Command) {
         use cmd::Command as C;
         match cmd {
             C::Create(create) => self.create(create),

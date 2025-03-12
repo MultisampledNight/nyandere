@@ -127,4 +127,8 @@ impl Ident {
     pub fn get(&self) -> &str {
         &self.0
     }
+
+    pub fn take(self) -> String {
+        self.0
+    }
 }
