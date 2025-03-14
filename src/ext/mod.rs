@@ -5,7 +5,7 @@ pub mod ui;
 
 use std::{
     num::ParseIntError,
-    ops::{Add, AddAssign, Mul, Sub, SubAssign},
+    ops::{Add, AddAssign, Sub, SubAssign},
     str::FromStr,
 };
 

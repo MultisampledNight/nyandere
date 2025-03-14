@@ -12,7 +12,7 @@
 //! [`Entity`]ies, [`Concept`]s or [`Object`]s:
 //! if there is one, it has to exist and hence be created at some point.
 
-use std::{array::IntoIter, cmp::Ordering};
+use std::array::IntoIter;
 
 use thiserror::Error;
 
@@ -34,6 +34,49 @@ pub struct State {
 
     pub balances: Map<Pair, Balance>,
 }
+
+impl State {
+    /// Looks up an already created [`Entity`] by name.
+    pub fn get_entity(&self, name: &Name) -> Result<&Entity, UnknownEntityError> {
+        self.entities
+            .get(&name)
+            .ok_or_else(|| UnknownEntityError(name.clone()))
+    }
+
+    /// Looks up an already created [`Concept`] by name.
+    pub fn get_concept(&self, name: &Name) -> Result<&Concept, UnknownConceptError> {
+        self.concepts
+            .get(&name)
+            .ok_or_else(|| UnknownConceptError(name.clone()))
+    }
+
+    /// Looks up an already created [`Object`] by name.
+    pub fn get_object(&self, name: &Name) -> Result<&Object, UnknownObjectError> {
+        self.objects
+            .get(&name)
+            .ok_or_else(|| UnknownObjectError(name.clone()))
+    }
+}
+
+#[derive(Owned!, thiserror::Error)]
+#[error("unknown actor -- maybe a typo? if you're sure it's not one, create it")]
+pub enum UnknownActorError {
+    Entity(#[from] UnknownEntityError),
+    Concept(#[from] UnknownConceptError),
+    Object(#[from] UnknownObjectError),
+}
+
+#[derive(Owned!, thiserror::Error)]
+#[error("unknown entity {0}")]
+pub struct UnknownEntityError(pub Name);
+
+#[derive(Owned!, thiserror::Error)]
+#[error("unknown concept {0}")]
+pub struct UnknownConceptError(pub Name);
+
+#[derive(Owned!, thiserror::Error)]
+#[error("unknown object {0}")]
+pub struct UnknownObjectError(pub Name);
 
 /// Someone who holds money and deliver things.
 #[derive(Owned!)]
@@ -133,8 +176,8 @@ impl Product {
 /// **Directed** edge between 2 different [`Entity`]ies.
 #[derive(Owned!)]
 pub struct Dir {
-    source: Entity,
-    target: Entity,
+    pub(super) source: Entity,
+    pub(super) target: Entity,
 }
 
 impl Dir {
@@ -192,8 +235,8 @@ impl IntoIterator for Dir {
 #[derive(Owned!)]
 pub struct Pair {
     // invariant: a <= b
-    a: Entity,
-    b: Entity,
+    pub(super) a: Entity,
+    pub(super) b: Entity,
 }
 
 impl Pair {

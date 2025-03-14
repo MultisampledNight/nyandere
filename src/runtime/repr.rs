@@ -6,7 +6,8 @@ use crate::{
 
 use super::{
     Runtime,
-    cmd::{Command, Name},
+    cmd::{Command, Name, Pay},
+    model::{Dir, SameError, UnknownActorError},
 };
 
 impl Runtime {
@@ -49,16 +50,9 @@ where
 pub enum Error {
     #[error("unknown actor")]
     UnknownActor(#[from] UnknownActorError),
-}
-
-#[derive(Owned!, thiserror::Error)]
-pub enum UnknownActorError {
-    #[error("entity {0}")]
-    Entity(Name),
-    #[error("object {0}")]
-    Object(Name),
-    #[error("concept {0}")]
-    Concept(Name),
+    // reasoning: there is no reason for a noop in money processing. likely a typo
+    #[error("from and to are the same, would be a noop")]
+    Same(#[from] SameError),
 }
 
 // this is so noisy, ramblings about that:
@@ -80,6 +74,10 @@ impl Repr<ast::Stmt> for Command {
                 ast::Actor::Concept(concept) => cmd::Create::Concept(concept.into()),
                 ast::Actor::Object(object) => cmd::Create::Object(runtime.repr(object)?),
             }),
+            Stmt::Transfer(cmd) => match cmd {
+                ast::Transfer::Pay(cmd) => Cmd::Pay(runtime.repr(cmd)?),
+                _ => todo!(),
+            },
             _ => todo!(),
         };
 
@@ -87,9 +85,12 @@ impl Repr<ast::Stmt> for Command {
     }
 }
 
-impl From<ast::Ident> for Name {
-    fn from(ident: ast::Ident) -> Self {
-        Self(ident.take())
+impl Repr<ast::Pay> for Pay {
+    fn repr(source: ast::Pay, runtime: &Runtime) -> Result<Self, Error> {
+        Ok(Self {
+            amount: source.amount,
+            who: runtime.repr(source.who)?,
+        })
     }
 }
 
@@ -123,16 +124,31 @@ impl Repr<ast::Object> for cmd::Object {
             // the only errornuous case is a referenced parent that doesn't exist
             parent: source
                 .parent
-                .map(Into::into)
-                .map(|parent| {
-                    runtime
-                        .state()
-                        .concepts
-                        .get(&parent)
-                        .cloned()
-                        .ok_or(Error::UnknownActor(UnknownActorError::Concept(parent)))
-                })
-                .transpose()?,
+                // maybe be variadic over the return type in Repr?
+                // e.g. i want to look up Concepts while inputting Names
+                // or should those be methods?
+                .map(|parent| runtime.get_concept(&parent.into()).cloned())
+                .transpose()
+                .map_err(UnknownActorError::Concept)?,
         })
+    }
+}
+
+impl Repr<ast::Dir> for Dir {
+    fn repr(ast::Dir { from, to }: ast::Dir, runtime: &Runtime) -> Result<Self, Error> {
+        let lookup = |side| {
+            runtime
+                .get_entity(&Name::from(side))
+                .map_err(UnknownActorError::Entity)
+                .cloned()
+        };
+
+        Ok(Self::new(lookup(from)?, lookup(to)?)?)
+    }
+}
+
+impl From<ast::Ident> for Name {
+    fn from(ident: ast::Ident) -> Self {
+        Self(ident.take())
     }
 }

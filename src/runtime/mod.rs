@@ -6,6 +6,8 @@ pub mod cmd;
 pub mod model;
 pub mod repr;
 
+use std::ops::Deref;
+
 pub use model::State;
 
 use crate::{Script, aux::NotOrd};
@@ -52,5 +54,13 @@ impl Runtime {
         }
 
         Ok(())
+    }
+}
+
+impl Deref for Runtime {
+    type Target = State;
+
+    fn deref(&self) -> &Self::Target {
+        &self.state
     }
 }
