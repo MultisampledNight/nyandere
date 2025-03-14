@@ -39,22 +39,37 @@ impl State {
     /// Looks up an already created [`Entity`] by name.
     pub fn get_entity(&self, name: &Name) -> Result<&Entity, UnknownEntityError> {
         self.entities
-            .get(&name)
+            .get(name)
             .ok_or_else(|| UnknownEntityError(name.clone()))
     }
 
     /// Looks up an already created [`Concept`] by name.
     pub fn get_concept(&self, name: &Name) -> Result<&Concept, UnknownConceptError> {
         self.concepts
-            .get(&name)
+            .get(name)
             .ok_or_else(|| UnknownConceptError(name.clone()))
     }
 
     /// Looks up an already created [`Object`] by name.
     pub fn get_object(&self, name: &Name) -> Result<&Object, UnknownObjectError> {
         self.objects
-            .get(&name)
+            .get(name)
             .ok_or_else(|| UnknownObjectError(name.clone()))
+    }
+
+    /// Returns how much the [`Dir::source`] owes [`Dir::target`].
+    ///
+    /// If the balance is _negative_, that means the balance is _in reverse_,
+    /// how much [`Dir::target`] owes [`Dir::source`] in absolute value!
+    pub fn balance(&self, dir: Dir) -> Balance {
+        let mut bal = self
+            .balances
+            .get(&dir.clone().into())
+            .cloned()
+            .unwrap_or(Balance(0.into()));
+
+        bal.take_order(dir);
+        bal
     }
 }
 

@@ -12,7 +12,10 @@ use std::{
 use num_bigint::{BigInt, BigUint};
 use thiserror::Error;
 
-use crate::aux::{Common, Owned};
+use crate::{
+    aux::{Common, Owned},
+    runtime::model::{Dir, Pair},
+};
 
 /// Count of european cents.
 #[derive(Owned!)]
@@ -31,6 +34,24 @@ impl Balance {
     /// the other way around.
     pub fn flip(&mut self) {
         self.0 *= -1;
+    }
+
+    /// Takes the direction of the given [`Dir`]
+    /// and applies it to this balance,
+    /// returning an undirected [`Pair`].
+    ///
+    /// This is necessary to index into [`State::balances`]
+    /// while also keeping the sign appropriately.
+    ///
+    /// Precisely speaking, the sign of the balance
+    /// is flipped iff the conversion
+    /// of the [`Dir`] to the [`Pair`] does not switch source and target.
+    pub fn take_order(&mut self, dir: Dir) -> Pair {
+        if !dir.would_reorder() {
+            self.flip()
+        }
+
+        dir.into()
     }
 }
 

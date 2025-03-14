@@ -4,7 +4,6 @@ use crate::{
     Runtime,
     aux::Owned,
     ext::{Balance, Money},
-    runtime::model::Pair,
 };
 
 use super::model::Dir;
@@ -26,23 +25,56 @@ pub struct Pay {
 
 impl Runtime {
     pub fn pay(&mut self, cmd: Pay) {
-        // the Pair conversion may reorder
-        // (so different orders still get the same balance)
-        // if the order is inequal, add
-        // if the order is equal, subtract
-        // (other order would be possible but imply negation in the `balance` cmd)
-
         let mut value: Balance = cmd.amount.into();
-        if !cmd.who.would_reorder() {
-            value.flip();
-        }
+        let key = value.take_order(cmd.who);
 
-        let lookup: Pair = cmd.who.clone().into();
-        match self.state.balances.entry(lookup) {
+        match self.state.balances.entry(key) {
             Entry::Occupied(mut entry) => *entry.get_mut() += value,
             Entry::Vacant(entry) => {
                 entry.insert(value);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{eval, ext::Integer, Set};
+
+    #[test]
+    fn basic() {
+        let state = eval(
+            "
+            create entity A
+            create entity B
+            create entity C
+
+            pay 1€ from A to B
+            pay 5€ from B to A
+            pay 3€ from A to C
+            ",
+        )
+        .unwrap();
+
+        assert_eq!(
+            state
+                .balances
+                .into_iter()
+                .map(|(pair, bal)| {
+                    (
+                        pair.into_iter()
+                            .map(|e| e.name().0.to_string())
+                            .collect::<Vec<_>>(),
+                        bal.0,
+                    )
+                })
+                .collect::<Set<_>>(),
+            [
+                (vec!["A".to_string(), "B".to_string()], Integer::from(400)),
+                (vec!["A".to_string(), "C".to_string()], Integer::from(-300))
+            ]
+            .into_iter()
+            .collect::<Set<_>>(),
+        );
     }
 }

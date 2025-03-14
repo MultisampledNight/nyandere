@@ -73,7 +73,7 @@ mod tests {
     use crate::{Set, eval};
 
     #[test]
-    fn create() {
+    fn inherit() {
         let state = eval(
             "
             create entity A
