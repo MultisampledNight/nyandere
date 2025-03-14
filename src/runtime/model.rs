@@ -19,7 +19,7 @@ use thiserror::Error;
 use crate::{
     Map,
     aux::{NotOrd, Owned},
-    ext::{Gtin, Money},
+    ext::{Balance, Gtin, Money},
 };
 
 use super::cmd::Name;
@@ -32,7 +32,7 @@ pub struct State {
     pub concepts: Map<Name, Concept>,
     pub objects: Map<Name, Object>,
 
-    pub balance: Map<Pair, Money>,
+    pub balances: Map<Pair, Balance>,
 }
 
 /// Someone who holds money and deliver things.
@@ -138,14 +138,6 @@ pub struct Dir {
 }
 
 impl Dir {
-    pub fn source(&self) -> &Entity {
-        &self.source
-    }
-
-    pub fn target(&self) -> &Entity {
-        &self.target
-    }
-
     /// Tries to construct a directed edge from `source` to `target`.
     ///
     /// # Errors
@@ -156,6 +148,29 @@ impl Dir {
             return Err(SameError(source, target));
         }
         Ok(Self { source, target })
+    }
+
+    pub fn source(&self) -> &Entity {
+        &self.source
+    }
+
+    pub fn target(&self) -> &Entity {
+        &self.target
+    }
+
+    /// Returns [`true`]
+    /// iff converting to a [`Pair`]
+    /// would put `target` as first argument
+    /// and `source` as second,
+    /// otherwise the other way around
+    pub fn would_reorder(&self) -> bool {
+        self.source > self.target
+    }
+}
+
+impl From<Dir> for Pair {
+    fn from(Dir { source, target }: Dir) -> Self {
+        Self::new(source, target).unwrap()
     }
 }
 
@@ -176,20 +191,12 @@ impl IntoIterator for Dir {
 /// **Undirected** edge between 2 different [`Entity`]ies.
 #[derive(Owned!)]
 pub struct Pair {
-    // invariant: a < b
+    // invariant: a <= b
     a: Entity,
     b: Entity,
 }
 
 impl Pair {
-    pub fn a(&self) -> &Entity {
-        &self.a
-    }
-
-    pub fn b(&self) -> &Entity {
-        &self.b
-    }
-
     /// Tries to construct an **undirected** edge between `a` and `b`.
     /// The order does not matter:
     /// the pair `a`, `b` is equivalent to the pair `b`, `a`.
@@ -198,17 +205,23 @@ impl Pair {
     ///
     /// Returns a [`SameError`] iff the two entities are the same.
     pub fn new(a: Entity, b: Entity) -> Result<Self, SameError> {
-        use Ordering as O;
+        // might seem needlessly complicated
+        // but i want to parametrize this as much as possible
+        let dir = Dir::new(a, b)?;
+        let reorder = dir.would_reorder();
+        let [a, b] = dir.into();
 
-        let (a, b) = match a.cmp(&b) {
-            O::Equal => return Err(SameError(a, b)),
-            // guarantee consistent ordering
-            // manual sorting, in a way
-            O::Less => (a, b),
-            O::Greater => (b, a),
-        };
+        let (a, b) = if reorder { (b, a) } else { (a, b) };
 
         Ok(Self { a, b })
+    }
+
+    pub fn a(&self) -> &Entity {
+        &self.a
+    }
+
+    pub fn b(&self) -> &Entity {
+        &self.b
     }
 }
 

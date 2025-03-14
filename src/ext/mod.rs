@@ -3,9 +3,13 @@
 pub mod config;
 pub mod ui;
 
-use std::{num::ParseIntError, str::FromStr};
+use std::{
+    num::ParseIntError,
+    ops::{Add, AddAssign, Mul, Sub, SubAssign},
+    str::FromStr,
+};
 
-use num_bigint::BigUint;
+use num_bigint::{BigInt, BigUint};
 use thiserror::Error;
 
 use crate::aux::{Common, Owned};
@@ -14,8 +18,77 @@ use crate::aux::{Common, Owned};
 #[derive(Owned!)]
 pub struct Money(pub Natural);
 
+/// How much two entities owe each other.
+#[derive(Owned!)]
+pub struct Balance(pub Integer);
+
 /// Natural number (including 0).
 pub type Natural = BigUint;
+pub type Integer = BigInt;
+
+impl Balance {
+    /// Make a negative value positive and
+    /// the other way around.
+    pub fn flip(&mut self) {
+        self.0 *= -1;
+    }
+}
+
+impl From<Money> for Balance {
+    fn from(amount: Money) -> Self {
+        Self(amount.0.into())
+    }
+}
+
+/// Implement noisy calculation traits,
+/// delegating to subvalues.
+macro_rules! calc {
+    (+ $lhs:ty, $rhs:ty $( => $inner:ty )? ) => {
+        impl Add<$rhs> for $lhs {
+            type Output = Self;
+            fn add(self, rhs: $rhs) -> Self {
+                Self(self.0 + $(<$inner>::from)?(rhs.0))
+            }
+        }
+    };
+    (- $lhs:ty, $rhs:ty $( => $inner:ty )? ) => {
+        impl Sub<$rhs> for $lhs {
+            type Output = Self;
+            fn sub(self, rhs: $rhs) -> Self {
+                Self(self.0 - $(<$inner>::from)?(rhs.0))
+            }
+        }
+    };
+    (+= $lhs:ty, $rhs:ty ) => {
+        impl AddAssign<$rhs> for $lhs {
+            fn add_assign(&mut self, rhs: $rhs) {
+                *self = self.clone() + rhs;
+            }
+        }
+    };
+    (-= $lhs:ty, $rhs:ty ) => {
+        impl SubAssign<$rhs> for $lhs {
+            fn sub_assign(&mut self, rhs: $rhs) {
+                *self = self.clone() - rhs;
+            }
+        }
+    };
+}
+
+calc!(+ Money, Money);
+calc!(-Money, Money);
+calc!(+= Money, Money);
+calc!(-= Money, Money);
+
+calc!(+ Balance, Balance);
+calc!(-Balance, Balance);
+calc!(+= Balance, Balance);
+calc!(-= Balance, Balance);
+
+calc!(+ Balance, Money => Integer);
+calc!(- Balance, Money => Integer);
+calc!(+= Balance, Money);
+calc!(-= Balance, Money);
 
 /// Global trade item number. The number behind the barcode you find in stores.
 ///
