@@ -56,6 +56,9 @@ mod tests {
         )
         .unwrap();
 
+        let s = |lit: &str| lit.to_string();
+        let i = Integer::from;
+
         assert_eq!(
             state
                 .balances
@@ -70,8 +73,8 @@ mod tests {
                 })
                 .collect::<Set<_>>(),
             [
-                (vec!["A".to_string(), "B".to_string()], Integer::from(400)),
-                (vec!["A".to_string(), "C".to_string()], Integer::from(-300))
+                (vec![s("A"), s("B")], i(400)),
+                (vec![s("A"), s("C")], i(-300))
             ]
             .into_iter()
             .collect::<Set<_>>(),

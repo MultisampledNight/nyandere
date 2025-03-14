@@ -6,11 +6,6 @@ create concept x price 1€
 create concept y price 2€
 create concept z price 3€
 
-purchase x from Store to A
-purchase y from Store to A
-purchase y from Store to B
-purchase z from Store to B
-
 deliver y from A to B
 deliver z from B to A
 
