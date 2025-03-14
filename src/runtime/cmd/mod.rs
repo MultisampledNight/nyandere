@@ -1,8 +1,10 @@
 //! Structurally interact with, modify and do things.
 
 pub mod create;
+pub mod pay;
 
 pub use create::Create;
+pub use pay::Pay;
 
 use crate::{
     aux::Owned,
@@ -22,7 +24,8 @@ impl Runtime {
     pub fn fulfil(&mut self, cmd: Command) {
         use Command as C;
         match cmd {
-            C::Create(create) => self.create(create),
+            C::Create(cmd) => self.create(cmd),
+            C::Pay(cmd) => self.pay(cmd),
             _ => todo!(),
         }
     }
@@ -32,18 +35,20 @@ impl Runtime {
 #[derive(Owned!)]
 pub enum Command {
     Create(Create),
-    Pay,
+    Pay(Pay),
     Deliver,
     Purchase,
     Stats,
     Balance,
 }
 
+/// A [`model::Entity`] except that it might not exist yet.
 #[derive(Owned!)]
 pub struct Entity {
     pub name: Name,
 }
 
+/// A [`model::Concept`] except that it might not exist yet.
 #[derive(Owned!)]
 pub struct Concept {
     pub name: Name,
@@ -51,17 +56,11 @@ pub struct Concept {
     pub gtin: Option<Gtin>,
 }
 
+/// A [`model::Object`] except that it might not exist yet.
 #[derive(Owned!)]
 pub struct Object {
     pub name: Name,
     pub parent: Option<model::Concept>,
-}
-
-/// Directed edge between 2 [`Entity`]ies.
-#[derive(Owned!)]
-pub struct Dir {
-    pub from: Entity,
-    pub to: Entity,
 }
 
 /// Text-based readable name.

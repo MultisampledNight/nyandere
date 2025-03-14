@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::runtime::cmd::Name;
+use crate::runtime::{cmd::Name, model::Entity};
 
 use super::Money;
 
@@ -16,5 +16,11 @@ impl fmt::Display for Money {
 impl fmt::Display for Name {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "`{}`", self.0)
+    }
+}
+
+impl fmt::Display for Entity {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "entity {}", self.name())
     }
 }
