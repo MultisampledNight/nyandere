@@ -98,7 +98,7 @@ mod tests {
             state
                 .objects
                 .into_values()
-                .map(|o| (o.name.unwrap().0, o.parent.unwrap().name.0))
+                .map(|o| (o.name.unwrap(), o.parent.unwrap().name))
                 .collect::<Set<_>>(),
             Set::from([("O".into(), "E".into()), ("T".into(), "E".into())])
         );

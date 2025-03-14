@@ -12,9 +12,7 @@
 //! [`Entity`]ies, [`Concept`]s or [`Object`]s:
 //! if there is one, it has to exist and hence be created at some point.
 
-use std::array::IntoIter;
-
-use thiserror::Error;
+use std::{array::IntoIter, mem};
 
 use crate::{
     Map,
@@ -22,7 +20,10 @@ use crate::{
     ext::{Balance, Gtin, Money},
 };
 
-use super::cmd::Name;
+use super::{
+    cmd::{Name, NameRef},
+    error::{self, UnknownActor, UnknownConcept, UnknownEntity, UnknownObject},
+};
 
 // TODO: generate this automatically
 #[derive(NotOrd!, Default)]
@@ -37,24 +38,31 @@ pub struct State {
 
 impl State {
     /// Looks up an already created [`Entity`] by name.
-    pub fn get_entity(&self, name: &Name) -> Result<&Entity, UnknownEntityError> {
+    pub fn get_entity(&self, name: NameRef) -> Result<&Entity, UnknownEntity> {
         self.entities
             .get(name)
-            .ok_or_else(|| UnknownEntityError(name.clone()))
+            .ok_or_else(|| UnknownEntity(name.to_owned()))
     }
 
     /// Looks up an already created [`Concept`] by name.
-    pub fn get_concept(&self, name: &Name) -> Result<&Concept, UnknownConceptError> {
+    pub fn get_concept(&self, name: NameRef) -> Result<&Concept, UnknownConcept> {
         self.concepts
             .get(name)
-            .ok_or_else(|| UnknownConceptError(name.clone()))
+            .ok_or_else(|| UnknownConcept(name.to_owned()))
     }
 
     /// Looks up an already created [`Object`] by name.
-    pub fn get_object(&self, name: &Name) -> Result<&Object, UnknownObjectError> {
+    pub fn get_object(&self, name: NameRef) -> Result<&Object, UnknownObject> {
         self.objects
             .get(name)
-            .ok_or_else(|| UnknownObjectError(name.clone()))
+            .ok_or_else(|| UnknownObject(name.to_owned()))
+    }
+
+    pub fn get_dir(&self, source: NameRef, target: NameRef) -> Result<Dir, error::Repr> {
+        let lookup = |side| self.get_entity(side).map_err(UnknownActor::Entity).cloned();
+
+        let dir = Dir::new(lookup(source)?, lookup(target)?)?;
+        Ok(dir)
     }
 
     /// Returns how much the [`Dir::source`] owes [`Dir::target`].
@@ -73,26 +81,6 @@ impl State {
     }
 }
 
-#[derive(Owned!, thiserror::Error)]
-#[error("unknown actor -- maybe a typo? if you're sure it's not one, create it")]
-pub enum UnknownActorError {
-    Entity(#[from] UnknownEntityError),
-    Concept(#[from] UnknownConceptError),
-    Object(#[from] UnknownObjectError),
-}
-
-#[derive(Owned!, thiserror::Error)]
-#[error("unknown entity {0}")]
-pub struct UnknownEntityError(pub Name);
-
-#[derive(Owned!, thiserror::Error)]
-#[error("unknown concept {0}")]
-pub struct UnknownConceptError(pub Name);
-
-#[derive(Owned!, thiserror::Error)]
-#[error("unknown object {0}")]
-pub struct UnknownObjectError(pub Name);
-
 /// Someone who holds money and deliver things.
 #[derive(Owned!)]
 pub struct Entity {
@@ -100,7 +88,7 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn name(&self) -> &Name {
+    pub fn name(&self) -> NameRef {
         &self.name
     }
 }
@@ -114,7 +102,7 @@ pub struct Concept {
 }
 
 impl Concept {
-    pub fn name(&self) -> &Name {
+    pub fn name(&self) -> NameRef {
         &self.name
     }
 
@@ -152,8 +140,8 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn name(&self) -> Option<&Name> {
-        self.name.as_ref()
+    pub fn name(&self) -> Option<NameRef> {
+        self.name.as_ref().map(String::as_ref)
     }
 
     pub fn parent(&self) -> Option<&Concept> {
@@ -201,9 +189,9 @@ impl Dir {
     /// # Errors
     ///
     /// Returns a [`SameError`] iff the two entities are the same.
-    pub fn new(source: Entity, target: Entity) -> Result<Self, SameError> {
+    pub fn new(source: Entity, target: Entity) -> Result<Self, error::Same> {
         if source == target {
-            return Err(SameError(source, target));
+            return Err(error::Same(source, target));
         }
         Ok(Self { source, target })
     }
@@ -223,6 +211,11 @@ impl Dir {
     /// otherwise the other way around
     pub fn would_reorder(&self) -> bool {
         self.source > self.target
+    }
+
+    /// Exchanges `source` and `target`.
+    pub fn flip(&mut self) {
+        mem::swap(&mut self.source, &mut self.target);
     }
 }
 
@@ -262,7 +255,7 @@ impl Pair {
     /// # Errors
     ///
     /// Returns a [`SameError`] iff the two entities are the same.
-    pub fn new(a: Entity, b: Entity) -> Result<Self, SameError> {
+    pub fn new(a: Entity, b: Entity) -> Result<Self, error::Same> {
         // might seem needlessly complicated
         // but i want to parametrize this as much as possible
         let dir = Dir::new(a, b)?;
@@ -296,7 +289,3 @@ impl IntoIterator for Pair {
         <[Entity; 2]>::from(self).into_iter()
     }
 }
-
-#[derive(Owned!, Error)]
-#[error("entities {0} and {1} are the same, but mustn't be")]
-pub struct SameError(Entity, Entity);

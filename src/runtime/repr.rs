@@ -1,13 +1,13 @@
 use crate::{
-    aux::Owned,
     runtime::cmd,
     syntax::ast::{self, Stmt},
 };
 
 use super::{
     Runtime,
-    cmd::{Command, Name, Pay},
-    model::{Dir, SameError, UnknownActorError},
+    cmd::{Balance, Command, Pay},
+    error,
+    model::Dir,
 };
 
 impl Runtime {
@@ -17,8 +17,8 @@ impl Runtime {
     /// # Errors
     ///
     /// Returns an error when the statement is semantically invalid,
-    /// see [`Error`] for details.
-    pub fn repr<T, U>(&self, source: T) -> Result<U, Error>
+    /// see [`error::Repr`] for details.
+    pub fn repr<T, U>(&self, source: T) -> Result<U, error::Repr>
     where
         U: Repr<T>,
     {
@@ -32,8 +32,8 @@ pub trait Repr<T>: Sized {
     ///
     /// This is a kind of parser: It narrows `source`s into
     /// valid [`Self`]es and
-    /// and invalid values into [`Error`]s.
-    fn repr(source: T, runtime: &Runtime) -> Result<Self, Error>;
+    /// and invalid values into [`error::Repr`]s.
+    fn repr(source: T, runtime: &Runtime) -> Result<Self, error::Repr>;
 }
 
 // conversion is trivial if From is already implemented
@@ -41,18 +41,9 @@ impl<T, U> Repr<T> for U
 where
     T: Into<U>,
 {
-    fn repr(source: T, _: &Runtime) -> Result<Self, Error> {
+    fn repr(source: T, _: &Runtime) -> Result<Self, error::Repr> {
         Ok(source.into())
     }
-}
-
-#[derive(Owned!, thiserror::Error)]
-pub enum Error {
-    #[error("unknown actor")]
-    UnknownActor(#[from] UnknownActorError),
-    // reasoning: there is no reason for a noop in money processing. likely a typo
-    #[error("from and to are the same, would be a noop")]
-    Same(#[from] SameError),
 }
 
 // this is so noisy, ramblings about that:
@@ -65,7 +56,7 @@ pub enum Error {
 // but not today
 
 impl Repr<ast::Stmt> for Command {
-    fn repr(source: ast::Stmt, runtime: &Runtime) -> Result<Self, Error> {
+    fn repr(source: ast::Stmt, runtime: &Runtime) -> Result<Self, error::Repr> {
         use cmd::Command as Cmd;
 
         let cmd = match source {
@@ -78,19 +69,13 @@ impl Repr<ast::Stmt> for Command {
                 ast::Transfer::Pay(cmd) => Cmd::Pay(runtime.repr(cmd)?),
                 _ => todo!(),
             },
-            _ => todo!(),
+            Stmt::Analyze(cmd) => match cmd {
+                ast::Analyze::Balance(cmd) => Cmd::Balance(runtime.repr(cmd)?),
+                _ => todo!(),
+            },
         };
 
         Ok(cmd)
-    }
-}
-
-impl Repr<ast::Pay> for Pay {
-    fn repr(source: ast::Pay, runtime: &Runtime) -> Result<Self, Error> {
-        Ok(Self {
-            amount: source.amount,
-            who: runtime.repr(source.who)?,
-        })
     }
 }
 
@@ -117,7 +102,7 @@ impl From<ast::Concept> for cmd::Concept {
 }
 
 impl Repr<ast::Object> for cmd::Object {
-    fn repr(source: ast::Object, runtime: &Runtime) -> Result<Self, Error> {
+    fn repr(source: ast::Object, runtime: &Runtime) -> Result<Self, error::Repr> {
         Ok(Self {
             name: source.name.into(),
             // not having a parent concept is entirely valid
@@ -127,28 +112,32 @@ impl Repr<ast::Object> for cmd::Object {
                 // maybe be variadic over the return type in Repr?
                 // e.g. i want to look up Concepts while inputting Names
                 // or should those be methods?
-                .map(|parent| runtime.get_concept(&parent.into()).cloned())
+                .map(|parent| runtime.get_concept(parent.as_ref()).cloned())
                 .transpose()
-                .map_err(UnknownActorError::Concept)?,
+                .map_err(error::UnknownActor::Concept)?,
+        })
+    }
+}
+
+impl Repr<ast::Pay> for Pay {
+    fn repr(source: ast::Pay, runtime: &Runtime) -> Result<Self, error::Repr> {
+        Ok(Self {
+            amount: source.amount,
+            who: runtime.repr(source.who)?,
+        })
+    }
+}
+
+impl Repr<ast::Balance> for Balance {
+    fn repr(source: ast::Balance, runtime: &Runtime) -> Result<Self, error::Repr> {
+        Ok(Self {
+            between: runtime.repr(source.between)?,
         })
     }
 }
 
 impl Repr<ast::Dir> for Dir {
-    fn repr(ast::Dir { from, to }: ast::Dir, runtime: &Runtime) -> Result<Self, Error> {
-        let lookup = |side| {
-            runtime
-                .get_entity(&Name::from(side))
-                .map_err(UnknownActorError::Entity)
-                .cloned()
-        };
-
-        Ok(Self::new(lookup(from)?, lookup(to)?)?)
-    }
-}
-
-impl From<ast::Ident> for Name {
-    fn from(ident: ast::Ident) -> Self {
-        Self(ident.take())
+    fn repr(ast::Dir { from, to }: ast::Dir, runtime: &Runtime) -> Result<Self, error::Repr> {
+        runtime.get_dir(from.as_ref(), to.as_ref())
     }
 }

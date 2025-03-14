@@ -3,6 +3,7 @@
 //! What is semantically valid?
 
 pub mod cmd;
+pub mod error;
 pub mod model;
 pub mod repr;
 
@@ -47,7 +48,7 @@ impl Runtime {
     /// the runtime is not rolled back
     /// and still holds the state built _until_ the
     /// invalid instruction.
-    pub fn run(&mut self, script: Script) -> Result<(), repr::Error> {
+    pub fn run(&mut self, script: Script) -> Result<(), error::Repr> {
         for stmt in script.0 {
             let cmd = self.repr(stmt)?;
             self.fulfil(cmd);

@@ -39,7 +39,7 @@ impl Runtime {
 
 #[cfg(test)]
 mod tests {
-    use crate::{eval, ext::Integer, Set};
+    use crate::{Set, eval, ext::Integer};
 
     #[test]
     fn basic() {
@@ -66,7 +66,7 @@ mod tests {
                 .map(|(pair, bal)| {
                     (
                         pair.into_iter()
-                            .map(|e| e.name().0.to_string())
+                            .map(|e| e.name().to_owned())
                             .collect::<Vec<_>>(),
                         bal.0,
                     )

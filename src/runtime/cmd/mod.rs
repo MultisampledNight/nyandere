@@ -1,8 +1,10 @@
 //! Structurally interact with, modify and do things.
 
+pub mod balance;
 pub mod create;
 pub mod pay;
 
+pub use balance::Balance;
 pub use create::Create;
 pub use pay::Pay;
 
@@ -26,6 +28,7 @@ impl Runtime {
         match cmd {
             C::Create(cmd) => self.create(cmd),
             C::Pay(cmd) => self.pay(cmd),
+            C::Balance(cmd) => println!("{}", self.balance(cmd)),
             _ => todo!(),
         }
     }
@@ -39,7 +42,7 @@ pub enum Command {
     Deliver,
     Purchase,
     Stats,
-    Balance,
+    Balance(Balance),
 }
 
 /// A [`model::Entity`] except that it might not exist yet.
@@ -63,12 +66,5 @@ pub struct Object {
     pub parent: Option<model::Concept>,
 }
 
-/// Text-based readable name.
-#[derive(Owned!)]
-pub struct Name(pub String);
-
-impl AsRef<str> for Name {
-    fn as_ref(&self) -> &str {
-        self.0.as_ref()
-    }
-}
+pub type Name = String;
+pub type NameRef<'a> = &'a str;

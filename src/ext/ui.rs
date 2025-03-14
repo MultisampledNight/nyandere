@@ -1,8 +1,10 @@
 use std::fmt;
 
-use crate::runtime::{cmd::Name, model::Entity};
+use num_bigint::Sign;
 
-use super::Money;
+use crate::runtime::model::Entity;
+
+use super::{Balance, Debit, Money};
 
 impl fmt::Display for Money {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -13,9 +15,27 @@ impl fmt::Display for Money {
     }
 }
 
-impl fmt::Display for Name {
+impl fmt::Display for Balance {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "`{}`", self.0)
+        let sign = match self.0.sign() {
+            Sign::Minus => "-",
+            _ => "",
+        };
+        let mag = Money(self.0.magnitude().clone());
+
+        write!(f, "{sign}{mag}")
+    }
+}
+
+impl fmt::Display for Debit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} owes {} to {}",
+            self.between.source(),
+            self.amount,
+            self.between.target()
+        )
     }
 }
 

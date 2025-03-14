@@ -127,8 +127,16 @@ impl Ident {
     pub fn get(&self) -> &str {
         &self.0
     }
+}
 
-    pub fn take(self) -> String {
-        self.0
+impl From<Ident> for String {
+    fn from(id: Ident) -> Self {
+        id.0
+    }
+}
+
+impl AsRef<str> for Ident {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
     }
 }

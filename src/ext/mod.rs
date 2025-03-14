@@ -36,6 +36,12 @@ impl Balance {
         self.0 *= -1;
     }
 
+    /// Takes the absolute value of this balance.
+    /// Effectively just truncates the sign.
+    pub fn abs(self) -> Money {
+        Money(self.0.into_parts().1)
+    }
+
     /// Takes the direction of the given [`Dir`]
     /// and applies it to this balance,
     /// returning an undirected [`Pair`].
@@ -110,6 +116,14 @@ calc!(+ Balance, Money => Integer);
 calc!(- Balance, Money => Integer);
 calc!(+= Balance, Money);
 calc!(-= Balance, Money);
+
+/// How much `amount` needs to be paid `between`
+/// in order for their balance to be 0 again.
+#[derive(Owned!)]
+pub struct Debit {
+    pub between: Dir,
+    pub amount: Money,
+}
 
 /// Global trade item number. The number behind the barcode you find in stores.
 ///
