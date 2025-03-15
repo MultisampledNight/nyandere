@@ -196,9 +196,22 @@ impl Repr<ast::Product> for Product {
                     .map_err(error::UnknownActor::ConceptGtin)?
                     .clone(),
             )),
-            ast::Product::Name(ident) => {
+            ast::Product::Name(name) => {
                 // TODO: document somewhere that by name, objects are looked up before concepts are
-                todo!("try lookup by object, else lookup by concept")
+                let name = name.as_ref();
+                let product = match (runtime.get_object(name), runtime.get_concept(name)) {
+                    (Ok(object), _) => Product::Object(object.clone()),
+                    (_, Ok(concept)) => Product::Concept(concept.clone()),
+                    (Err(_), Err(_)) => {
+                        // i wish that some day we get some autopathfinding for errors in rust
+                        // this is. um. not easy to read nor fun to write
+                        return Err(error::UnknownActor::ProductName(error::UnknownProductName(
+                            name.to_owned(),
+                        )))?;
+                    }
+                };
+
+                Ok(product)
             }
         }
     }

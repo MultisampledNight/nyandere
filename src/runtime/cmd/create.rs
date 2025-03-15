@@ -55,9 +55,7 @@ impl Runtime {
                 // if it has a GTIN, we also need to remember it separately
                 // so it is still stored when it is shadowed by name
                 if let Some(gtin) = concept.gtin {
-                    self.state
-                        .concepts_gtin
-                        .insert(gtin.clone(), concept.clone());
+                    self.state.concepts_gtin.insert(gtin, concept.clone());
                 }
 
                 self.state.concepts.insert(concept.name.clone(), concept);

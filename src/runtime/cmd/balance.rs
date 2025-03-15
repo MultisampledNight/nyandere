@@ -25,7 +25,7 @@ impl Runtime {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Runtime, Script, syntax::ast};
+    use crate::{Runtime, Script};
 
     #[test]
     fn basic() {

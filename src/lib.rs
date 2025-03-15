@@ -46,11 +46,8 @@ use eyre::{Result, WrapErr, format_err};
 
 pub fn run() -> Result<()> {
     let cfg = config::cli();
-
     let script = cfg.source.get().wrap_err("while loading source")?;
-    // TODO: throw the error into ariadne to render with better UX
-
-    dbg!(eval(script)?);
+    eval(script)?;
 
     Ok(())
 }

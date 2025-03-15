@@ -101,7 +101,7 @@ impl State {
     pub fn get_concept_by_gtin(&self, gtin: &Gtin) -> Result<&Concept, UnknownConceptGtin> {
         self.concepts_gtin
             .get(gtin)
-            .ok_or_else(|| UnknownConceptGtin(gtin.clone()))
+            .ok_or(UnknownConceptGtin(*gtin))
     }
 
     /// Looks up an already created [`Object`] by name.
