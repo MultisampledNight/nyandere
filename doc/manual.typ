@@ -495,7 +495,7 @@ for GTIN-14:
 
 + [x] Write parser
 + [x] Write minimal command set
-+ [ ] Add `split` param to `deliver`
++ [>] Add `split` param to `deliver`
 + [ ] Introduce `import` command for sourcing another file
   - Pretty much essential for keeping product databases
 + [ ] Introduce `ctx` command for setting params in the commands that follow

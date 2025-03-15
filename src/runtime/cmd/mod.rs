@@ -32,7 +32,6 @@ impl Runtime {
             C::Pay(cmd) => self.pay(cmd),
             C::Deliver(cmd) => self.deliver(cmd),
             C::Balance(cmd) => println!("{}", self.balance(cmd)),
-            _ => todo!(),
         }
     }
 }
@@ -43,8 +42,6 @@ pub enum Command {
     Create(Create),
     Pay(Pay),
     Deliver(Deliver),
-    Purchase,
-    Stats,
     Balance(Balance),
 }
 

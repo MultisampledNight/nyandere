@@ -229,34 +229,16 @@ pub fn deliver<'a>() -> impl P<'a, Deliver> {
     .map(|(what, price, who)| Deliver { what, price, who })
 }
 
-pub fn purchase<'a>() -> impl P<'a, Purchase> {
-    cmd!(
-        "purchase" :
-        product(),
-        price() => Parser::or_not,
-        dir(),
-    )
-    .map(|(what, price, who)| Purchase { what, price, who })
-}
-
-pub fn stats<'a>() -> impl P<'a, Stats> {
-    cmd!("stats" | "statistics").to(Stats)
-}
-
 pub fn balance<'a>() -> impl P<'a, Balance> {
     cmd!("balance" | "bal" : dir()).map(|(between,)| Balance { between })
 }
 
 pub fn transfer<'a>() -> impl P<'a, Transfer> {
-    choice((
-        pay().map(Transfer::Pay),
-        deliver().map(Transfer::Deliver),
-        purchase().map(Transfer::Purchase),
-    ))
+    choice((pay().map(Transfer::Pay), deliver().map(Transfer::Deliver)))
 }
 
 pub fn analyze<'a>() -> impl P<'a, Analyze> {
-    choice((stats().map(Analyze::Stats), balance().map(Analyze::Balance)))
+    choice((balance().map(Analyze::Balance),))
 }
 
 pub fn statement<'a>() -> impl P<'a, Stmt> {
@@ -273,8 +255,6 @@ pub fn statement<'a>() -> impl P<'a, Stmt> {
 pub fn comment<'a>() -> impl E<'a> {
     just('#')
         // What can appear in a comment?
-        // Lazy since `repeated` is greedy by default
-        // (would cause comments to include the next lines as well)
         .then(any().and_is(newline().not()).repeated())
         // How can comments be ended?
         .then(choice((newline(), end())))

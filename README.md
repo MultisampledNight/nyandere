@@ -18,10 +18,12 @@ like a receipt!
 The syntax is inspired by [SQL].
 It is case-sensitive, though.
 
-Any script generally consists of 3 phases:
+A script usually consists of 3 phases:
 **creation**,
 **transfer** and
 **analysis**.
+See [`asset/examples/typical.nyan`](./asset/examples/typical.nyan)
+for a small typical script.
 
 ### Creation
 

@@ -29,13 +29,11 @@ pub struct Create {
 pub enum Transfer {
     Pay(Pay),
     Deliver(Deliver),
-    Purchase(Purchase),
 }
 
 /// Read-only commands.
 #[derive(Owned!)]
 pub enum Analyze {
-    Stats(Stats),
     Balance(Balance),
 }
 
@@ -53,18 +51,6 @@ pub struct Deliver {
     pub who: Dir,
     pub price: Option<Money>,
 }
-
-/// Delivery and payment back in one go,
-/// not influencing balance hence.
-#[derive(Owned!)]
-pub struct Purchase {
-    pub what: Product,
-    pub who: Dir,
-    pub price: Option<Money>,
-}
-
-#[derive(Owned!)]
-pub struct Stats;
 
 #[derive(Owned!)]
 pub struct Balance {

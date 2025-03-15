@@ -19,10 +19,8 @@ transfer = pay / deliver / purchase
 analyze = stats / balance
 
 pay = "pay" value dir
-deliver = "deliver" product [price] dir
-purchase = "purchase" product [price] dir
+deliver = "deliver" product [price] dir [split]
 
-stats = "stats" / "statistics"
 balance = ("bal" / "balance") dir
 
 ; actors
@@ -34,6 +32,7 @@ concept = "concept" hsp ident [hsp price] [hsp "gtin" gtin]
 ; parameters
 product = hsp (ident / gtin)
 price = hsp "price" hsp value
+split = hsp "split" hsp ratio
 value = hsp money
 
 dir = from to
@@ -48,6 +47,8 @@ euros = (decimal / nat) osp sign-eur
 
 sign-eur = "€" / "eur" / "EUR"
 sign-ct = "¢" / "ct" / "cents"
+
+ratio = nat osp ":" osp nat
 
 ; not entirely correct but eh
 gtin = 8*14DIGIT

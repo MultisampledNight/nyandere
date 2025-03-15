@@ -70,11 +70,9 @@ impl Repr<ast::Stmt> for Command {
             Stmt::Transfer(cmd) => match cmd {
                 ast::Transfer::Pay(cmd) => Cmd::Pay(runtime.repr(cmd)?),
                 ast::Transfer::Deliver(cmd) => Cmd::Deliver(runtime.repr(cmd)?),
-                _ => todo!(),
             },
             Stmt::Analyze(cmd) => match cmd {
                 ast::Analyze::Balance(cmd) => Cmd::Balance(runtime.repr(cmd)?),
-                _ => todo!(),
             },
         };
 
