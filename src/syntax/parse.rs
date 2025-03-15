@@ -132,6 +132,14 @@ pub fn gtin<'a>() -> impl P<'a, Gtin> {
         .unwrapped()
 }
 
+pub fn ratio<'a>() -> impl P<'a, Ratio> {
+    group((
+        nat().then_ignore(osp().then(just(":"))),
+        osp().ignore_then(nat()),
+    ))
+    .map(|(left, right)| Ratio { left, right })
+}
+
 pub fn cents<'a>() -> impl P<'a, Money> {
     let suffix = osp()
         .then(choice((just("cents"), just("ct"), just("¢"))))
@@ -170,6 +178,10 @@ pub fn product<'a>() -> impl P<'a, Product> {
 
 pub fn price<'a>() -> impl P<'a, Money> {
     cmd!("price" : money()).map(untup)
+}
+
+pub fn split<'a>() -> impl P<'a, Ratio> {
+    cmd!("split" : ratio()).map(untup)
 }
 
 // actors
@@ -225,8 +237,14 @@ pub fn deliver<'a>() -> impl P<'a, Deliver> {
         product(),
         price() => Parser::or_not,
         dir(),
+        split() => Parser::or_not,
     )
-    .map(|(what, price, who)| Deliver { what, price, who })
+    .map(|(what, price, who, split)| Deliver {
+        what,
+        price,
+        who,
+        split,
+    })
 }
 
 pub fn balance<'a>() -> impl P<'a, Balance> {

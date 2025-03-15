@@ -4,7 +4,7 @@
 
 use crate::{
     aux::Owned,
-    ext::{Gtin, Money},
+    ext::{Gtin, Money, Natural},
 };
 
 #[derive(Owned!)]
@@ -50,6 +50,7 @@ pub struct Deliver {
     pub what: Product,
     pub who: Dir,
     pub price: Option<Money>,
+    pub split: Option<Ratio>,
 }
 
 #[derive(Owned!)]
@@ -99,6 +100,13 @@ pub struct Dir {
 
     /// Who receives it.
     pub to: Ident,
+}
+
+/// Distribution between left and right.
+#[derive(Owned!)]
+pub struct Ratio {
+    pub left: Natural,
+    pub right: Natural,
 }
 
 #[derive(Owned!)]
