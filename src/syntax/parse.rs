@@ -169,7 +169,10 @@ pub fn to<'a>() -> impl P<'a, Ident> {
 }
 
 pub fn dir<'a>() -> impl P<'a, Dir> {
-    group((from(), hsp(), to())).map(|(from, _, to)| Dir { from, to })
+    group((from(), hsp(), to())).map(|(from, _, to)| Dir {
+        source: from,
+        target: to,
+    })
 }
 
 pub fn product<'a>() -> impl P<'a, Product> {

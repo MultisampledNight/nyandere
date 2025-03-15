@@ -228,6 +228,15 @@ Here, $a, b$ are entities, $o$ is an object.
     - Example: `2025-03-01..2025-03-07`
   ],
 
+  `ratio`,
+  [
+    Rational number representing how to distribute prices.
+    Mustn't be 0 on both sides.
+
+    - Example: `1:2` splits price into 3 parts:
+      `from` pays 1 part and `to` pays 2 parts
+  ],
+
   `entity`,
   [
     `ident` that has been previously `create entity`'d.
@@ -288,61 +297,39 @@ on the specifics of how to write them.
 
 #detail(
   `pay <money>
-  from <from:entity>
-  to <to:entity>`,
-  [Transfers `money` from `from` to `to`.],
+  from <source:entity>
+  to <target:entity>`,
+  [Transfers `money` from `source` to `target`.],
 
   `deliver <product>
   (price <money>)
-  from <from:entity>
-  to <to:entity>`,
+  from <source:entity>
+  to <target:entity>
+  (split <ratio>)`,
   [
-    Delivers `product` from `from` to `to`.
+    Delivers `product` from `source` to `target`.
     This implies a money transfer of `money`
     from `from` to `to`.
     `money` defaults to
     the default price of `product`.
-  ],
 
-  `purchase <product>
-  (price <money>)
-  from <from:entity>
-  to <to:entity>`,
-  [
-    Deliver `product` from `from` to `to` and
-    immediately also pay back what's needed.
-    Shorthand for:
-
-    ```
-    deliver <product> from <from> to <to>
-    pay <money> from <to> to <from>
-    ```
+    `ratio` specifies by how much to reduce money.
+    The left part of the ratio is how much the
   ],
 )
 
 === Analysis
 
 #detail(
-  `stats`,
-  [
-    Analyzes all payments and deliveries made.
-    Emitted are:
-
-    - Money spent in total
-    - Count of deliveries
-    - Quartiles of money spent over purchases
-    - Average products
-  ],
-
   `balance
-  from <from:entity>
-  to <to:entity>`,
+  from <source:entity>
+  to <target:entity>`,
   [
     Go through all payments,
     including implied ones,
-    between `from` and `to` and
-    emit how much money `from`
-    needs to pay to `to`
+    between `source` and `target` and
+    emit how much money `source`
+    needs to pay to `target`
     so their balance is equal again.
   ],
 )

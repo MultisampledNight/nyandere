@@ -96,10 +96,10 @@ pub enum Product {
 #[derive(Owned!)]
 pub struct Dir {
     /// Who gives something away.
-    pub from: Ident,
+    pub source: Ident,
 
     /// Who receives it.
-    pub to: Ident,
+    pub target: Ident,
 }
 
 /// Distribution between left and right.

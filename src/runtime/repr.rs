@@ -130,21 +130,30 @@ impl Repr<ast::Pay> for Pay {
 }
 
 impl Repr<ast::Deliver> for Deliver {
-    fn repr(source: ast::Deliver, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(
+        ast::Deliver {
+            what,
+            who,
+            price,
+            split,
+        }: ast::Deliver,
+        runtime: &Runtime,
+    ) -> Result<Self, error::Repr> {
         // NOTE: do not move this into the chain below.
         // this check should *always* happen on delivery.
         // there's no purpose in delivering something that doesn't
         // exist. we'll keep track of the deliveries in future.
-        let product: Product = runtime.repr(source.what)?;
+        let product: Product = runtime.repr(what)?;
 
         // goal: find the price of the delivered product
         let price =
             // is it directly the deliver command itself?
-            source.price
+            price
             // if not, is there a known default price for the product?
             .map_or_else(|| product.default_price().cloned(), Ok)?;
+
         Ok(Self {
-            who: runtime.repr(source.who)?,
+            who: runtime.repr(who)?,
             price,
         })
     }
@@ -159,7 +168,13 @@ impl Repr<ast::Balance> for Balance {
 }
 
 impl Repr<ast::Dir> for Dir {
-    fn repr(ast::Dir { from, to }: ast::Dir, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(
+        ast::Dir {
+            source: from,
+            target: to,
+        }: ast::Dir,
+        runtime: &Runtime,
+    ) -> Result<Self, error::Repr> {
         runtime.get_dir(from.as_ref(), to.as_ref())
     }
 }

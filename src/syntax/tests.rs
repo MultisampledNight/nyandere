@@ -31,7 +31,10 @@ fn basic() {
         "pay 30ct from A to B",
         Pay {
             amount: Money(30u8.into()),
-            who: Dir { from: a(), to: b() },
+            who: Dir {
+                source: a(),
+                target: b(),
+            },
         },
     );
 
@@ -40,7 +43,10 @@ fn basic() {
         &format!("deliver {gtin} price 1€ from A to B"),
         Deliver {
             what: Product::Id(Gtin::new(gtin).unwrap()),
-            who: Dir { from: a(), to: b() },
+            who: Dir {
+                source: a(),
+                target: b(),
+            },
             price: Some(Money(100u8.into())),
         },
     );
