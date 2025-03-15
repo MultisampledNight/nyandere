@@ -1,10 +1,7 @@
 //! Refine what's semantically meaningful and what not.
 
 use crate::{
-    runtime::{
-        cmd,
-        model::{Concept, Object},
-    },
+    runtime::cmd,
     syntax::ast::{self, Stmt},
 };
 
@@ -136,36 +133,18 @@ impl Repr<ast::Pay> for Pay {
 
 impl Repr<ast::Deliver> for Deliver {
     fn repr(source: ast::Deliver, runtime: &Runtime) -> Result<Self, error::Repr> {
-        // goal: find the price of the delivered product
+        // NOTE: do not move this into the chain below.
+        // this check should *always* happen on delivery.
+        // there's no purpose in delivering something that doesn't
+        // exist. we'll keep track of the deliveries in future.
         let product: Product = runtime.repr(source.what)?;
 
-        let price = (|| {
-            // overridden by direct specification in the deliver command itself?
-            if let Some(price) = source.price {
-                return Ok(price);
-            }
-
-            // otherwise, is the product a concept with a `price` set on creation?
-            if let Product::Concept(ref concept)
-            // or is it an object whose parent is?
-            | Product::Object(Object {
-                parent: Some(ref concept),
-                ..
-            }) = product
-            {
-                if let Concept {
-                    default_price: Some(default_price),
-                    ..
-                } = concept
-                {
-                    return Ok(default_price.clone());
-                }
-            }
-
-            // nope. error out then, can't tell if letting the price unspecified was intentional or not
-            Err::<_, error::Repr>(error::PriceUnspecified { product }.into())
-        })()?;
-
+        // goal: find the price of the delivered product
+        let price =
+            // is it directly the deliver command itself?
+            source.price
+            // if not, is there a known default price for the product?
+            .map_or_else(|| product.default_price().cloned(), Ok)?;
         Ok(Self {
             who: runtime.repr(source.who)?,
             price,

@@ -52,6 +52,11 @@ pub struct UnknownProductName(pub Name);
 #[error("{0} and {1} are the same, but mustn't be")]
 pub struct Same(pub Entity, pub Entity);
 
+/// The price of that product is not specified and
+/// could not be inferred.
+///
+/// If that is intentional as it's a gift, specify `0` as price.
+/// Otherwise, see if you might need to update a concept definition.
 #[derive(Owned!, thiserror::Error)]
 #[error("cannot deliver {product} without knowing the money expected in return at some point -- specify 0 if it's a gift")]
 pub struct PriceUnspecified {

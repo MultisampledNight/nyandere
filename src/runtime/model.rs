@@ -22,7 +22,10 @@ use crate::{
 
 use super::{
     cmd::{Name, NameRef},
-    error::{self, UnknownActor, UnknownConcept, UnknownConceptGtin, UnknownEntity, UnknownObject},
+    error::{
+        self, PriceUnspecified, UnknownActor, UnknownConcept, UnknownConceptGtin, UnknownEntity,
+        UnknownObject,
+    },
 };
 
 // TODO: generate this automatically
@@ -200,6 +203,38 @@ pub enum Product {
     Concept(Concept),
     /// Take this object directly.
     Object(Object),
+}
+
+impl Product {
+    /// How much is this product worth by default,
+    /// iff that is set (either directly or by parent)?
+    pub fn default_price(&self) -> Result<&Money, PriceUnspecified> {
+        let err = || {
+            Err(PriceUnspecified {
+                product: self.clone(),
+            })
+        };
+
+        // directly a concept...
+        let (Product::Concept(concept)
+        // ...or a concept as parent
+        | Product::Object(Object {
+            parent: Some(concept),
+            ..
+        })) = self
+        else {
+            return err();
+        };
+
+        // then let's look inside the concept,
+        // does it have a default price?
+        let Some(default_price) = concept.default_price() else {
+            return err();
+        };
+
+        // yeah, it does! yay!
+        Ok(default_price)
+    }
 }
 
 /// **Directed** edge between 2 different [`Entity`]ies.
