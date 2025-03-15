@@ -149,8 +149,9 @@ pub struct Debit {
 pub struct Gtin(u64);
 
 impl Gtin {
-    /// The largest possible GTIN with 14 digits. For now, that is.
-    const MAX: Self = Self(10u64.pow(14) - 1);
+    /// The largest possible GTIN has 14 digits. For now, that is.
+    pub const MAX_DIGITS: u8 = 14;
+    pub const MAX: Self = Self(10u64.pow(Self::MAX_DIGITS as u32) - 1);
 
     /// Interpret the integer as-is as GTIN.
     ///
@@ -158,18 +159,27 @@ impl Gtin {
     ///
     /// Returns an error if the integer is longer than 14 digits.
     pub fn new(source: u64) -> Result<Self, TooLongError> {
-        if source > Self::MAX.0 {
+        let gtin = Self(source);
+
+        if gtin.digits() > Self::MAX_DIGITS {
             return Err(TooLongError {
                 orig: source,
-                n: digits(source),
+                n: gtin.digits(),
             });
         }
 
-        Ok(Self(source))
+        Ok(gtin)
     }
 
     pub fn get(&self) -> u64 {
         self.0
+    }
+
+    /// How many digits are in this GTIN
+    /// when represented in base 10?
+    pub fn digits(&self) -> u8 {
+        let n = self.0;
+        if n == 0 { 1 } else { n.ilog10() as u8 + 1 }
     }
 }
 
@@ -181,11 +191,6 @@ impl FromStr for Gtin {
     }
 }
 
-/// Returns how many digits are in the base 10 repr of `n`.
-fn digits(n: u64) -> u32 {
-    if n == 0 { 1 } else { n.ilog10() + 1 }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum GtinParseError {
     #[error("couldn't parse as an integer: {0}")]
@@ -195,8 +200,14 @@ pub enum GtinParseError {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
-#[error("`{orig}` contains {n} digits while longest form can only contain 14")]
+#[error(
+    "`{orig}` contains {n} digits while it can contain {} digits at most",
+    Gtin::MAX_DIGITS
+)]
 pub struct TooLongError {
     pub orig: u64,
-    pub n: u32,
+    // yeah, a u8 suffices.
+    // ceil(log10(2^64 - 1)) = 20,
+    // so 20 digits can be at max in a u64
+    pub n: u8,
 }

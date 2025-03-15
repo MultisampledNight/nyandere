@@ -22,15 +22,41 @@ use crate::{
 
 use super::{
     cmd::{Name, NameRef},
-    error::{self, UnknownActor, UnknownConcept, UnknownEntity, UnknownObject},
+    error::{self, UnknownActor, UnknownConcept, UnknownConceptGtin, UnknownEntity, UnknownObject},
 };
 
 // TODO: generate this automatically
+/// An index of directly accessible actors.
+///
+/// # On being complete
+///
+/// Note that over time,
+/// actors might be come inaccessible
+/// as their names (or GTIN, in case of a concept)
+/// can be shadowed.
+/// In this case, they will never become accessible again.
+/// ***However***, they will still be referred to
+/// when referenced elsewhere.
+/// 
+/// For example, take this script:
+///
+/// ```text
+/// create concept C price 1€
+/// create object O
+/// create concept C price 2€
+/// ```
+///
+/// After this script was ran,
+/// object `O` still the former concept `C` with price 1€
+/// as parent.
+/// However, only the latter concept `C` with price 2€
+/// can be referred to by its name.
 #[derive(NotOrd!, Default)]
 pub struct State {
     // not much use -- yet, that is
     pub entities: Map<Name, Entity>,
     pub concepts: Map<Name, Concept>,
+    pub concepts_gtin: Map<Gtin, Concept>,
     pub objects: Map<Name, Object>,
 
     pub balances: Map<Pair, Balance>,
@@ -49,6 +75,33 @@ impl State {
         self.concepts
             .get(name)
             .ok_or_else(|| UnknownConcept(name.to_owned()))
+    }
+
+    /// Looks up an already created [`Concept`]
+    /// that had a GTIN specified on creation
+    /// by [`Gtin`].
+    ///
+    /// # Caveats
+    ///
+    /// This might have unintended consequences with shadowing!
+    /// For example, take the following script:
+    ///
+    /// ```text
+    /// create concept A price 1€ gtin 12345678
+    /// create concept A price 2€
+    /// create concept A price 3€
+    /// ```
+    ///
+    /// There are now 3 concepts with the name `A`,
+    /// but only the last one with price `3€` is reachable by the name `A`.
+    /// The first one with the GTIN `12345678`
+    /// can be reached via that GTIN.
+    /// The second one, however, is inaccessible
+    /// (assuming it is not a parent of an object).
+    pub fn get_concept_by_gtin(&self, gtin: &Gtin) -> Result<&Concept, UnknownConceptGtin> {
+        self.concepts_gtin
+            .get(gtin)
+            .ok_or_else(|| UnknownConceptGtin(gtin.clone()))
     }
 
     /// Looks up an already created [`Object`] by name.
@@ -113,23 +166,6 @@ impl Concept {
     pub fn gtin(&self) -> Option<Gtin> {
         self.gtin
     }
-
-    /// Return a real instanced [`Object`] of this concept.
-    pub fn realize(&self) -> Object {
-        Object {
-            name: None,
-            parent: Some(self.clone()),
-        }
-    }
-
-    /// Return a real instanced [`Object`] of this concept
-    /// and give it an accessible name.
-    pub fn realize_named(&self, name: Name) -> Object {
-        Object {
-            name: Some(name),
-            parent: Some(self.clone()),
-        }
-    }
 }
 
 /// Physically holdable something.
@@ -164,16 +200,6 @@ pub enum Product {
     Concept(Concept),
     /// Take this object directly.
     Object(Object),
-}
-
-impl Product {
-    /// Instantiate or directly return the desired [`Object`].
-    pub fn realize(&self) -> Object {
-        match self {
-            Self::Object(object) => object.clone(),
-            Self::Concept(concept) => concept.realize(),
-        }
-    }
 }
 
 /// **Directed** edge between 2 different [`Entity`]ies.

@@ -2,13 +2,12 @@ create entity Store # more or less representative of the "external world"
 create entity A
 create entity B
 
-create concept x price 1€
-create concept y price 2€
-create concept z price 3€
+create concept x price 1€ gtin 10000000
+create concept y price 2€ gtin 20000000
+create concept z price 3€ gtin 30000000
 
-deliver y from A to B
-deliver z from B to A
+deliver 20000000 from A to B
+deliver 30000000 from B to A
 
-stats
 balance from A to B # should be 1€
 

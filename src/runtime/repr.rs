@@ -1,13 +1,18 @@
+//! Refine what's semantically meaningful and what not.
+
 use crate::{
-    runtime::cmd,
+    runtime::{
+        cmd,
+        model::{Concept, Object},
+    },
     syntax::ast::{self, Stmt},
 };
 
 use super::{
     Runtime,
-    cmd::{Balance, Command, Pay},
+    cmd::{Balance, Command, Deliver, Pay},
     error,
-    model::Dir,
+    model::{Dir, Product},
 };
 
 impl Runtime {
@@ -67,6 +72,7 @@ impl Repr<ast::Stmt> for Command {
             }),
             Stmt::Transfer(cmd) => match cmd {
                 ast::Transfer::Pay(cmd) => Cmd::Pay(runtime.repr(cmd)?),
+                ast::Transfer::Deliver(cmd) => Cmd::Deliver(runtime.repr(cmd)?),
                 _ => todo!(),
             },
             Stmt::Analyze(cmd) => match cmd {
@@ -128,6 +134,45 @@ impl Repr<ast::Pay> for Pay {
     }
 }
 
+impl Repr<ast::Deliver> for Deliver {
+    fn repr(source: ast::Deliver, runtime: &Runtime) -> Result<Self, error::Repr> {
+        // goal: find the price of the delivered product
+        let product: Product = runtime.repr(source.what)?;
+
+        let price = (|| {
+            // overridden by direct specification in the deliver command itself?
+            if let Some(price) = source.price {
+                return Ok(price);
+            }
+
+            // otherwise, is the product a concept with a `price` set on creation?
+            if let Product::Concept(ref concept)
+            // or is it an object whose parent is?
+            | Product::Object(Object {
+                parent: Some(ref concept),
+                ..
+            }) = product
+            {
+                if let Concept {
+                    default_price: Some(default_price),
+                    ..
+                } = concept
+                {
+                    return Ok(default_price.clone());
+                }
+            }
+
+            // nope. error out then, can't tell if letting the price unspecified was intentional or not
+            Err::<_, error::Repr>(error::PriceUnspecified { product }.into())
+        })()?;
+
+        Ok(Self {
+            who: runtime.repr(source.who)?,
+            price,
+        })
+    }
+}
+
 impl Repr<ast::Balance> for Balance {
     fn repr(source: ast::Balance, runtime: &Runtime) -> Result<Self, error::Repr> {
         Ok(Self {
@@ -139,5 +184,22 @@ impl Repr<ast::Balance> for Balance {
 impl Repr<ast::Dir> for Dir {
     fn repr(ast::Dir { from, to }: ast::Dir, runtime: &Runtime) -> Result<Self, error::Repr> {
         runtime.get_dir(from.as_ref(), to.as_ref())
+    }
+}
+
+impl Repr<ast::Product> for Product {
+    fn repr(source: ast::Product, runtime: &Runtime) -> Result<Self, error::Repr> {
+        match source {
+            ast::Product::Id(gtin) => Ok(Product::Concept(
+                runtime
+                    .get_concept_by_gtin(&gtin)
+                    .map_err(error::UnknownActor::ConceptGtin)?
+                    .clone(),
+            )),
+            ast::Product::Name(ident) => {
+                // TODO: document somewhere that by name, objects are looked up before concepts are
+                todo!("try lookup by object, else lookup by concept")
+            }
+        }
     }
 }

@@ -46,14 +46,21 @@ impl Runtime {
                     .insert(entity.name.clone(), model::Entity { name: entity.name });
             }
             C::Concept(concept) => {
-                self.state.concepts.insert(
-                    concept.name.clone(),
-                    model::Concept {
-                        name: concept.name,
-                        default_price: concept.default_price,
-                        gtin: concept.gtin,
-                    },
-                );
+                let concept = model::Concept {
+                    name: concept.name,
+                    default_price: concept.default_price,
+                    gtin: concept.gtin,
+                };
+
+                // if it has a GTIN, we also need to remember it separately
+                // so it is still stored when it is shadowed by name
+                if let Some(gtin) = concept.gtin {
+                    self.state
+                        .concepts_gtin
+                        .insert(gtin.clone(), concept.clone());
+                }
+
+                self.state.concepts.insert(concept.name.clone(), concept);
             }
             C::Object(object) => {
                 self.state.objects.insert(

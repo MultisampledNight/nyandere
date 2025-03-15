@@ -2,10 +2,12 @@
 
 pub mod balance;
 pub mod create;
+pub mod deliver;
 pub mod pay;
 
 pub use balance::Balance;
 pub use create::Create;
+pub use deliver::Deliver;
 pub use pay::Pay;
 
 use crate::{
@@ -28,6 +30,7 @@ impl Runtime {
         match cmd {
             C::Create(cmd) => self.create(cmd),
             C::Pay(cmd) => self.pay(cmd),
+            C::Deliver(cmd) => self.deliver(cmd),
             C::Balance(cmd) => println!("{}", self.balance(cmd)),
             _ => todo!(),
         }
@@ -39,7 +42,7 @@ impl Runtime {
 pub enum Command {
     Create(Create),
     Pay(Pay),
-    Deliver,
+    Deliver(Deliver),
     Purchase,
     Stats,
     Balance(Balance),
