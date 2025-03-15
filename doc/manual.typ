@@ -494,13 +494,10 @@ for GTIN-14:
 = Todo
 
 + [x] Write parser
-+ [>] Write business logic
-  - Need some conversion from AST commands to model commands
-    - While in context/having read access to the runtime state
-  - Where would `syntax::ast::Script` be "run" then?
-    - Perchance in `lib.rs`, given that it's pretty high-level?
++ [x] Write minimal command set
++ [ ] Add `split` param to `deliver`
 + [ ] Introduce `import` command for sourcing another file
   - Pretty much essential for keeping product databases
-+ [ ] Introduce `ctx` command for setting `from` and `to` in the commands that follow
++ [ ] Introduce `ctx` command for setting params in the commands that follow
 + [o] Write REPL
 
