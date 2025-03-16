@@ -9,7 +9,7 @@ use super::{
     Runtime,
     cmd::{Balance, Command, Deliver, Pay},
     error,
-    model::{Dir, Product},
+    model::{Dir, Product, Ratio},
 };
 
 impl Runtime {
@@ -155,6 +155,10 @@ impl Repr<ast::Deliver> for Deliver {
         Ok(Self {
             who: runtime.repr(who)?,
             price,
+            split: split
+                .map(|split| runtime.repr(split))
+                .transpose()?
+                .unwrap_or_default(),
         })
     }
 }
@@ -176,6 +180,12 @@ impl Repr<ast::Dir> for Dir {
         runtime: &Runtime,
     ) -> Result<Self, error::Repr> {
         runtime.get_dir(from.as_ref(), to.as_ref())
+    }
+}
+
+impl Repr<ast::Ratio> for Ratio {
+    fn repr(ast::Ratio { left, right }: ast::Ratio, _: &Runtime) -> Result<Self, error::Repr> {
+        Self::new(left, right).map_err(error::Repr::BothZero)
     }
 }
 

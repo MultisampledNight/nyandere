@@ -17,7 +17,7 @@ use std::{array::IntoIter, mem};
 use crate::{
     Map,
     aux::{NotOrd, Owned},
-    ext::{Balance, Gtin, Money},
+    ext::{Balance, Gtin, Money, Natural},
 };
 
 use super::{
@@ -348,5 +348,52 @@ impl IntoIterator for Pair {
     type IntoIter = IntoIter<Entity, 2>;
     fn into_iter(self) -> Self::IntoIter {
         <[Entity; 2]>::from(self).into_iter()
+    }
+}
+
+/// Split an amount between 2 parties.
+#[derive(Owned!)]
+pub struct Ratio {
+    // invariant: at least one of {source,target} is non-zero
+    source: Natural,
+    target: Natural,
+}
+
+impl Ratio {
+    pub fn new(source: Natural, target: Natural) -> Result<Self, error::BothZero> {
+        if source == Natural::ZERO && target == Natural::ZERO {
+            return Err(error::BothZero);
+        }
+
+        Ok(Self { source, target })
+    }
+
+    /// How many parts is this ratio over?
+    pub fn denominator(self) -> Natural {
+        self.source + self.target
+    }
+
+    /// Distribute the money according to this ratio.
+    ///
+    /// # Rounding
+    ///
+    /// If the ratio causes the money to be split into fractional cents,
+    /// the source part is rounded down to the next smaller chunk and
+    /// the target part is rounded up to cover the rest.
+    pub fn split(self, full: Money) -> (Money, Money) {
+        let chunk = full.0.clone() / self.clone().denominator();
+        let source = self.source * chunk;
+        let target = full.0 - source.clone();
+
+        (Money(source), Money(target))
+    }
+}
+
+impl Default for Ratio {
+    fn default() -> Self {
+        Self {
+            source: 0u8.into(),
+            target: 1u8.into(),
+        }
     }
 }

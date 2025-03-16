@@ -314,7 +314,10 @@ on the specifics of how to write them.
     the default price of `product`.
 
     `ratio` specifies by how much to reduce money.
-    The left part of the ratio is how much the
+    The left-hand part of the ratio is how much the source gifts,
+    the right-hand part is how much the target pays.
+    It defaults to `0:1`,
+    meaning the target pays the entirety of `money`.
   ],
 )
 
@@ -486,5 +489,8 @@ for GTIN-14:
 + [ ] Introduce `import` command for sourcing another file
   - Pretty much essential for keeping product databases
 + [ ] Introduce `ctx` command for setting params in the commands that follow
++ [ ] Improve error messages
+  - [ ] Label the parsers
+  - [ ] Use ariadne for rendering
 + [o] Write REPL
 

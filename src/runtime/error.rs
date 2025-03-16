@@ -14,7 +14,8 @@ use super::{
 pub enum Repr {
     UnknownActor(#[from] UnknownActor),
     Same(#[from] Same),
-    DeliveryPaymentUnclear(#[from] PriceUnspecified),
+    Unspecified(#[from] PriceUnspecified),
+    BothZero(#[from] BothZero),
 }
 
 #[derive(Owned!, Error)]
@@ -62,3 +63,7 @@ pub struct Same(pub Entity, pub Entity);
 pub struct PriceUnspecified {
     pub product: Product,
 }
+
+#[derive(Owned!, thiserror::Error)]
+#[error("tried to construct a ratio with both parts being zero, at least one of them has to be zero")]
+pub struct BothZero;
