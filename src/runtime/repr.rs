@@ -28,14 +28,14 @@ impl Runtime {
     }
 }
 
-/// [`TryFrom`] but with runtime context. See [`Repr::repr`].
+/// [`TryFrom`] but with rt context. See [`Repr::repr`].
 pub trait Repr<T>: Sized {
-    /// Convert `T` into [`Self`] in the context of a runtime.
+    /// Convert `T` into [`Self`] in the context of a rt.
     ///
     /// This is a kind of parser: It narrows `source`s into
     /// valid [`Self`]es and
     /// and invalid values into [`error::Repr`]s.
-    fn repr(source: T, runtime: &Runtime) -> Result<Self, error::Repr>;
+    fn repr(source: T, rt: &Runtime) -> Result<Self, error::Repr>;
 }
 
 // conversion is trivial if From is already implemented
@@ -58,21 +58,21 @@ where
 // but not today
 
 impl Repr<ast::Stmt> for Command {
-    fn repr(source: ast::Stmt, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(source: ast::Stmt, rt: &Runtime) -> Result<Self, error::Repr> {
         use cmd::Command as Cmd;
 
         let cmd = match source {
             Stmt::Create(cmd) => Cmd::Create(match cmd.who {
                 ast::Actor::Entity(entity) => cmd::Create::Entity(entity.into()),
                 ast::Actor::Concept(concept) => cmd::Create::Concept(concept.into()),
-                ast::Actor::Object(object) => cmd::Create::Object(runtime.repr(object)?),
+                ast::Actor::Object(object) => cmd::Create::Object(rt.repr(object)?),
             }),
             Stmt::Transfer(cmd) => match cmd {
-                ast::Transfer::Pay(cmd) => Cmd::Pay(runtime.repr(cmd)?),
-                ast::Transfer::Deliver(cmd) => Cmd::Deliver(runtime.repr(cmd)?),
+                ast::Transfer::Pay(cmd) => Cmd::Pay(rt.repr(cmd)?),
+                ast::Transfer::Deliver(cmd) => Cmd::Deliver(rt.repr(cmd)?),
             },
             Stmt::Analyze(cmd) => match cmd {
-                ast::Analyze::Balance(cmd) => Cmd::Balance(runtime.repr(cmd)?),
+                ast::Analyze::Balance(cmd) => Cmd::Balance(rt.repr(cmd)?),
             },
         };
 
@@ -103,7 +103,7 @@ impl From<ast::Concept> for cmd::Concept {
 }
 
 impl Repr<ast::Object> for cmd::Object {
-    fn repr(source: ast::Object, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(source: ast::Object, rt: &Runtime) -> Result<Self, error::Repr> {
         Ok(Self {
             name: source.name.into(),
             // not having a parent concept is entirely valid
@@ -113,7 +113,7 @@ impl Repr<ast::Object> for cmd::Object {
                 // maybe be variadic over the return type in Repr?
                 // e.g. i want to look up Concepts while inputting Names
                 // or should those be methods?
-                .map(|parent| runtime.get_concept(parent.as_ref()).cloned())
+                .map(|parent| rt.get_concept(parent.as_ref()).cloned())
                 .transpose()
                 .map_err(error::UnknownActor::Concept)?,
         })
@@ -121,10 +121,10 @@ impl Repr<ast::Object> for cmd::Object {
 }
 
 impl Repr<ast::Pay> for Pay {
-    fn repr(source: ast::Pay, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(source: ast::Pay, rt: &Runtime) -> Result<Self, error::Repr> {
         Ok(Self {
             amount: source.amount,
-            who: runtime.repr(source.who)?,
+            who: rt.repr(source.who)?,
         })
     }
 }
@@ -137,13 +137,13 @@ impl Repr<ast::Deliver> for Deliver {
             price,
             split,
         }: ast::Deliver,
-        runtime: &Runtime,
+        rt: &Runtime,
     ) -> Result<Self, error::Repr> {
         // NOTE: do not move this into the chain below.
         // this check should *always* happen on delivery.
         // there's no purpose in delivering something that doesn't
         // exist. we'll keep track of the deliveries in future.
-        let product: Product = runtime.repr(what)?;
+        let product: Product = rt.repr(what)?;
 
         // goal: find the price of the delivered product
         let price =
@@ -153,10 +153,10 @@ impl Repr<ast::Deliver> for Deliver {
             .map_or_else(|| product.default_price().cloned(), Ok)?;
 
         Ok(Self {
-            who: runtime.repr(who)?,
+            who: rt.repr(who)?,
             price,
             split: split
-                .map(|split| runtime.repr(split))
+                .map(|split| rt.repr(split))
                 .transpose()?
                 .unwrap_or_default(),
         })
@@ -164,9 +164,9 @@ impl Repr<ast::Deliver> for Deliver {
 }
 
 impl Repr<ast::Balance> for Balance {
-    fn repr(source: ast::Balance, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(source: ast::Balance, rt: &Runtime) -> Result<Self, error::Repr> {
         Ok(Self {
-            between: runtime.repr(source.between)?,
+            between: rt.repr(source.between)?,
         })
     }
 }
@@ -177,9 +177,9 @@ impl Repr<ast::Dir> for Dir {
             source: from,
             target: to,
         }: ast::Dir,
-        runtime: &Runtime,
+        rt: &Runtime,
     ) -> Result<Self, error::Repr> {
-        runtime.get_dir(from.as_ref(), to.as_ref())
+        rt.get_dir(from.as_ref(), to.as_ref())
     }
 }
 
@@ -190,18 +190,17 @@ impl Repr<ast::Ratio> for Ratio {
 }
 
 impl Repr<ast::Product> for Product {
-    fn repr(source: ast::Product, runtime: &Runtime) -> Result<Self, error::Repr> {
+    fn repr(source: ast::Product, rt: &Runtime) -> Result<Self, error::Repr> {
         match source {
             ast::Product::Id(gtin) => Ok(Product::Concept(
-                runtime
-                    .get_concept_by_gtin(&gtin)
+                rt.get_concept_by_gtin(&gtin)
                     .map_err(error::UnknownActor::ConceptGtin)?
                     .clone(),
             )),
             ast::Product::Name(name) => {
                 // TODO: document somewhere that by name, objects are looked up before concepts are
                 let name = name.as_ref();
-                let product = match (runtime.get_object(name), runtime.get_concept(name)) {
+                let product = match (rt.get_object(name), rt.get_concept(name)) {
                     (Ok(object), _) => Product::Object(object.clone()),
                     (_, Ok(concept)) => Product::Concept(concept.clone()),
                     (Err(_), Err(_)) => {
