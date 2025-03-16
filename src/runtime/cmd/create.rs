@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn inherit() {
-        let state = eval(
+        let rt = eval(
             "
             create entity A
             create entity B
@@ -95,12 +95,12 @@ mod tests {
 
         // all entities there?
         assert_eq!(
-            state.entities.keys().map(AsRef::as_ref).collect::<Set<_>>(),
+            rt.entities.keys().map(AsRef::as_ref).collect::<Set<_>>(),
             ["A", "B", "C"].into_iter().collect(),
         );
 
         assert_eq!(
-            state
+            rt.to_state()
                 .objects
                 .into_values()
                 .map(|o| (o.name.unwrap(), o.parent.unwrap().name))

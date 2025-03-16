@@ -48,6 +48,7 @@ fn basic() {
                 target: b(),
             },
             price: Some(Money(100u8.into())),
+            split: None,
         },
     );
 }

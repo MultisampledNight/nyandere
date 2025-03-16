@@ -39,7 +39,6 @@ pub mod syntax;
 
 use ext::config;
 pub use runtime::Runtime;
-use runtime::State;
 pub use syntax::ast::Script;
 
 use eyre::{Result, WrapErr, format_err};
@@ -54,7 +53,7 @@ pub fn run() -> Result<()> {
 
 /// Parses and runs the given script,
 /// returning the final runtime state.
-pub fn eval(script: impl AsRef<str>) -> Result<State> {
+pub fn eval(script: impl AsRef<str>) -> Result<Runtime> {
     let script = Script::parse(script.as_ref())
         .into_result()
         .map_err(|orig| format_err!("while parsing source code: {orig:?}"))?;
@@ -62,5 +61,5 @@ pub fn eval(script: impl AsRef<str>) -> Result<State> {
     let mut runtime = Runtime::new();
     runtime.run(script).wrap_err("while evaluating")?;
 
-    Ok(runtime.to_state())
+    Ok(runtime)
 }

@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn basic() {
-        let state = eval(
+        let rt = eval(
             "
             create entity A
             create entity B
@@ -60,7 +60,7 @@ mod tests {
         let i = Integer::from;
 
         assert_eq!(
-            state
+            rt.to_state()
                 .balances
                 .into_iter()
                 .map(|(pair, bal)| {
