@@ -63,3 +63,17 @@ pub fn eval(script: impl AsRef<str>) -> Result<Runtime> {
 
     Ok(runtime)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ext::{Balance, Integer};
+
+    use super::*;
+
+    #[test]
+    fn smoke() {
+        let rt = eval(include_str!("../asset/examples/typical.nyan")).unwrap();
+        let dir = rt.get_dir("A", "B").unwrap();
+        assert_eq!(rt.state().balance(dir), Balance(Integer::from(-200)));
+    }
+}

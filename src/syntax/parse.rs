@@ -1,6 +1,4 @@
-#![allow(unused)]
-
-use std::str::FromStr;
+#![allow(clippy::double_parens)]
 
 use chumsky::{
     Parser,
@@ -49,7 +47,6 @@ macro_rules! cmd {
 /// optionally with post-processing.
 macro_rules! param {
     ($pre:expr $(=> $post:expr)?) => {
-        #[allow(clippy::double_parens)]
         {
             $(({ $post }))?
             (hsp().ignore_then({ $pre }))
