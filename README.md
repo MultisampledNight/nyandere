@@ -6,7 +6,6 @@ Finally figure out how much everyone owes each other.
 
 If [Rust] is already installed,
 just write `cargo install nyandere`!
-Otherwise check out [the latest release].
 
 ## Usage
 
@@ -85,12 +84,16 @@ A transfer is one of:
 - **Payment** of money from an entity to an entity via
     `pay <money> from <entity> to <entity>`
 - **Delivery** of a product from an entity to an entity via
-    `deliver <product> (price <money>) from <entity> to <entity>`
+    `deliver <product> (price <money>) from <entity> to <entity> (split <ratio>)`
     - The price expresses
         what the source entity *expects back*
         from the target entity
-    - It is a value debit expected back at some point, in a way
-    - Has to be specified only if the product doesn't have a default price
+        - It is a value debit expected back at some point, in a way
+        - Has to be specified only if the product doesn't have a default price
+    - The split is how to distribute the price
+        - The default is `0:1`, the target entity is expected to pay everything
+        - `2:1` for example would be a 2-to-1 split, 2 parts paid by the source
+            entity, 1 part paid by target entity
 
 ### Analysis
 
