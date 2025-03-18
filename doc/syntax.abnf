@@ -12,34 +12,17 @@ script = *(*sd (statement sd / comment) *sd)
 comment = "#" *(VCHAR / hsp) newline
 
 ; commands
-statement = create / transfer / analyze
+statement = command args-positional args-keyvalue
+args-positional = *value
+args-keyvalue = *(hsp param hsp value)
 
-create = "create" hsp actor
-transfer = pay / deliver / purchase
-analyze = stats / balance
+command = ident
+param = ident
+value = literal / variable ; could expand to variables in future
 
-pay = "pay" value dir
-deliver = "deliver" product [price] dir [split]
+literal = money / ratio / gtin
+variable = ident
 
-balance = ("bal" / "balance") dir
-
-; actors
-actor = entity / object / concept
-entity = "entity" hsp ident
-object = "object" hsp ident [hsp "parent" hsp ident]
-concept = "concept" hsp ident [hsp price] [hsp "gtin" gtin]
-
-; parameters
-product = hsp (ident / gtin)
-price = hsp "price" hsp value
-split = hsp "split" hsp ratio
-value = hsp money
-
-dir = from to
-from = hsp "from" hsp ident
-to = hsp "to" hsp ident
-
-; literals
 money = cents / euros
 
 cents = nat [osp sign-ct]
