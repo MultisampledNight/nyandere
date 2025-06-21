@@ -6,29 +6,23 @@
 ; should also be accepted by the parser,
 ; the parser might accept even more though)
 
-; toplevel
-script = *(*sd (statement sd / comment) *sd)
+script = *(*stmt-delim (stmt stmt-delim / comment) *stmt-delim)
 
 comment = "#" *(VCHAR / hsp) newline
 
-; commands
-statement = command args
-args = posi kv
-posi = *expr
-kv = *(hsp param hsp expr)
+stmt = command args
 
-command = ident
-param = ident
-expr = literal / variable ; could expand to variables in future
+command = "create" / "pay" / "deliver" / "balance"
 
-literal = money / ratio / gtin
-variable = ident
+args = *(arg-kv / arg-pos)
+arg-kv = ident value
+arg-pos = value
+
+value = money / ratio / gtin / name
 
 money = cents / euros
-
 cents = nat [osp sign-ct]
 euros = (decimal / nat) osp sign-eur
-
 sign-eur = "€" / "eur" / "EUR"
 sign-ct = "¢" / "ct" / "cents"
 
@@ -36,6 +30,9 @@ ratio = nat osp ":" osp nat
 
 ; not entirely correct but eh
 gtin = 8*14DIGIT
+
+name = ident
+
 
 ; basics
 ident = ? Default Identifier as per https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax ?

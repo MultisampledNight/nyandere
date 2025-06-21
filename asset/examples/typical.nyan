@@ -1,8 +1,4 @@
-create entity {
-	Store # more or less representative of the "external world"
-	A
-	B
-}
+create entity { Store; A; B }
 
 create concept {
 	x price 1€ gtin 10000000
