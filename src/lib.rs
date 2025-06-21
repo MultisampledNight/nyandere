@@ -59,7 +59,7 @@ pub fn eval(script: impl AsRef<str>) -> Result<Runtime> {
         .map_err(|orig| format_err!("while parsing source code: {orig:?}"))?;
 
     let mut runtime = Runtime::new();
-    runtime.run(script).wrap_err("while evaluating")?;
+    runtime.run(script).unwrap();
 
     Ok(runtime)
 }

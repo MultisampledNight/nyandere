@@ -5,7 +5,6 @@
 pub mod cmd;
 pub mod error;
 pub mod model;
-pub mod repr;
 
 use std::ops::Deref;
 
@@ -48,9 +47,9 @@ impl Runtime {
     /// the runtime is not rolled back
     /// and still holds the state built _until_ the
     /// invalid instruction.
-    pub fn run(&mut self, script: Script) -> Result<(), error::Repr> {
+    pub fn run(&mut self, script: Script) -> Result<(), ()> {
         for stmt in script.0 {
-            let cmd = self.repr(stmt)?;
+            let cmd = todo!();
             self.fulfil(cmd);
         }
 

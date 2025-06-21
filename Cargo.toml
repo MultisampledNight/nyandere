@@ -15,6 +15,7 @@ chumsky = "1.0.0-alpha.8"
 clap = { version = "4.5.21", features = ["derive"] }
 eyre = "0.6.12"
 futures = "0.3.29"
+logos = "0.15.0"
 macro_rules_attribute = "0.2.0"
 num-bigint = "0.4.6"
 serde = { version = "1.0.215", features = ["derive"] }

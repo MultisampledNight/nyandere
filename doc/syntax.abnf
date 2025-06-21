@@ -23,8 +23,8 @@ value = money / ratio / gtin / name
 money = cents / euros
 cents = nat [osp sign-ct]
 euros = (decimal / nat) osp sign-eur
-sign-eur = "€" / "eur" / "EUR"
-sign-ct = "¢" / "ct" / "cents"
+sign-eur = "€" / "eur" / "EUR" / "euros"
+sign-ct = "¢" / "ct" / "cent" / "cents"
 
 ratio = nat osp ":" osp nat
 
@@ -42,7 +42,7 @@ nat = (nonzero *DIGIT) / "0"
 
 ; whitespace
 ; Statement delimiter.
-sd = osp (";" / newline) osp
+stmt-delim = osp (";" / newline) osp
 newline = LF / CRLF
 ; Optional (can be, but doesn't have to)
 osp = *WSP
