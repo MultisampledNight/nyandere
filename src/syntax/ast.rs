@@ -3,11 +3,11 @@ use crate::{
     ext::{Gtin, Integer},
 };
 
-pub struct Script(pub Vec<Stmt>);
+pub struct Script<'src>(pub Vec<Stmt<'src>>);
 
-pub struct Stmt {
+pub struct Stmt<'src> {
     cmd: Command,
-    args: Args,
+    args: Args<'src>,
 }
 
 pub enum Command {
