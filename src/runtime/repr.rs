@@ -61,44 +61,14 @@ impl Repr<ast::Stmt> for Command {
     fn repr(source: ast::Stmt, rt: &Runtime) -> Result<Self, error::Repr> {
         use cmd::Command as Cmd;
 
-        let cmd = match source {
-            Stmt::Create(cmd) => Cmd::Create(match cmd.who {
-                ast::Actor::Entity(entity) => cmd::Create::Entity(entity.into()),
-                ast::Actor::Concept(concept) => cmd::Create::Concept(concept.into()),
-                ast::Actor::Object(object) => cmd::Create::Object(rt.repr(object)?),
-            }),
-            Stmt::Transfer(cmd) => match cmd {
-                ast::Transfer::Pay(cmd) => Cmd::Pay(rt.repr(cmd)?),
-                ast::Transfer::Deliver(cmd) => Cmd::Deliver(rt.repr(cmd)?),
-            },
-            Stmt::Analyze(cmd) => match cmd {
-                ast::Analyze::Balance(cmd) => Cmd::Balance(rt.repr(cmd)?),
-            },
+        let cmd = match source.command.as_ref() {
+            "create" => todo!(),
+            "pay" => todo!(),
+            "deliver" => todo!(),
+            "balance" | "bal" => todo!(),
         };
 
         Ok(cmd)
-    }
-}
-
-impl From<ast::Entity> for cmd::Entity {
-    fn from(ast::Entity { name }: ast::Entity) -> Self {
-        Self { name: name.into() }
-    }
-}
-
-impl From<ast::Concept> for cmd::Concept {
-    fn from(
-        ast::Concept {
-            name,
-            default_price,
-            gtin,
-        }: ast::Concept,
-    ) -> Self {
-        Self {
-            name: name.into(),
-            default_price,
-            gtin,
-        }
     }
 }
 
@@ -119,17 +89,8 @@ impl Repr<ast::Object> for cmd::Object {
         })
     }
 }
-
-impl Repr<ast::Pay> for Pay {
-    fn repr(source: ast::Pay, rt: &Runtime) -> Result<Self, error::Repr> {
-        Ok(Self {
-            amount: source.amount,
-            who: rt.repr(source.who)?,
-        })
-    }
-}
-
 impl Repr<ast::Deliver> for Deliver {
+
     fn repr(
         ast::Deliver {
             what,
@@ -160,26 +121,6 @@ impl Repr<ast::Deliver> for Deliver {
                 .transpose()?
                 .unwrap_or_default(),
         })
-    }
-}
-
-impl Repr<ast::Balance> for Balance {
-    fn repr(source: ast::Balance, rt: &Runtime) -> Result<Self, error::Repr> {
-        Ok(Self {
-            between: rt.repr(source.between)?,
-        })
-    }
-}
-
-impl Repr<ast::Dir> for Dir {
-    fn repr(
-        ast::Dir {
-            source: from,
-            target: to,
-        }: ast::Dir,
-        rt: &Runtime,
-    ) -> Result<Self, error::Repr> {
-        rt.get_dir(from.as_ref(), to.as_ref())
     }
 }
 

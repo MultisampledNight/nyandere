@@ -12,94 +12,28 @@ pub struct Script(pub Vec<Stmt>);
 
 /// Something that can be done.
 #[derive(Owned!)]
-pub enum Stmt {
-    Create(Create),
-    Transfer(Transfer),
-    Analyze(Analyze),
-}
-
-/// Commands that introduce new state.
-#[derive(Owned!)]
-pub struct Create {
-    pub who: Actor,
-}
-
-/// Actions that do something and modify state.
-#[derive(Owned!)]
-pub enum Transfer {
-    Pay(Pay),
-    Deliver(Deliver),
-}
-
-/// Read-only commands.
-#[derive(Owned!)]
-pub enum Analyze {
-    Balance(Balance),
-}
-
-/// Money transfer.
-#[derive(Owned!)]
-pub struct Pay {
-    pub amount: Money,
-    pub who: Dir,
-}
-
-/// Physical transfer implying a money transfer.
-#[derive(Owned!)]
-pub struct Deliver {
-    pub what: Product,
-    pub who: Dir,
-    pub price: Option<Money>,
-    pub split: Option<Ratio>,
+pub struct Stmt {
+    pub command: Ident,
+    pub args: Args,
 }
 
 #[derive(Owned!)]
-pub struct Balance {
-    pub between: Dir,
+pub struct Args {
+    pub positional: Vec<Expr>,
+    pub key_value: Vec<(Ident, Expr)>,
 }
 
 #[derive(Owned!)]
-pub enum Actor {
-    Entity(Entity),
-    Object(Object),
-    Concept(Concept),
-}
-
-/// Holds money and resources.
-#[derive(Owned!)]
-pub struct Entity {
-    pub name: Ident,
-}
-
-/// Can be delivered and passed around.
-#[derive(Owned!)]
-pub struct Object {
-    pub name: Ident,
-    pub parent: Option<Ident>,
+pub enum Expr {
+    Lit(Lit),
+    Var(Ident),
 }
 
 #[derive(Owned!)]
-pub struct Concept {
-    pub name: Ident,
-    pub default_price: Option<Money>,
-    pub gtin: Option<Gtin>,
-}
-
-#[derive(Owned!)]
-pub enum Product {
-    Name(Ident),
-    Id(Gtin),
-}
-
-/// Directional specification.
-/// Source and recipient.
-#[derive(Owned!)]
-pub struct Dir {
-    /// Who gives something away.
-    pub source: Ident,
-
-    /// Who receives it.
-    pub target: Ident,
+pub enum Lit {
+    Money(Money),
+    Ratio(Ratio),
+    Gtin(Gtin),
 }
 
 /// Distribution between left and right.

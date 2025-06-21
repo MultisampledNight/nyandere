@@ -12,13 +12,14 @@ script = *(*sd (statement sd / comment) *sd)
 comment = "#" *(VCHAR / hsp) newline
 
 ; commands
-statement = command args-positional args-keyvalue
-args-positional = *value
-args-keyvalue = *(hsp param hsp value)
+statement = command args
+args = posi kv
+posi = *expr
+kv = *(hsp param hsp expr)
 
 command = ident
 param = ident
-value = literal / variable ; could expand to variables in future
+expr = literal / variable ; could expand to variables in future
 
 literal = money / ratio / gtin
 variable = ident
