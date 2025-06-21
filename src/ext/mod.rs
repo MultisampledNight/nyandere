@@ -13,7 +13,7 @@ use num_bigint::{BigInt, BigUint};
 use thiserror::Error;
 
 use crate::{
-    aux::{Common, Owned},
+    aux::{Owned, Stack},
     runtime::model::{Dir, Pair},
 };
 
@@ -145,7 +145,7 @@ pub struct Debit {
 // which requires `ceil(log2(10^14 - 1)) = 47` bits
 // next largest int is u64
 // which has the nice side effect of "automatically" padding shorter GTINs with zeroes
-#[derive(Common!)]
+#[derive(Stack!)]
 pub struct Gtin(u64);
 
 impl Gtin {

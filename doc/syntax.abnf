@@ -14,8 +14,8 @@ stmt = command args
 
 command = "create" / "pay" / "deliver" / "balance"
 
-args = *(arg-kv / arg-pos)
-arg-kv = ident value
+args = *(arg-named / arg-pos)
+arg-named = ident value
 arg-pos = value
 
 value = money / ratio / gtin / name

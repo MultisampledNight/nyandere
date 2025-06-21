@@ -1,6 +1,8 @@
 use logos::Logos;
 
-#[derive(Logos)]
+use crate::aux::Stack;
+
+#[derive(Stack!, Logos)]
 pub enum Token<'src> {
     // commands
     #[token("create")]
