@@ -16,10 +16,13 @@ impl<'tok> Script<'tok> {
     /// [`FromStr::from_str`] but not, since that doesn't allow lifetime constraints.
     pub fn parse<'src: 'tok>(source: &'src str) -> ParseResult<Self, Error<'tok, 'src>> {
         // based on https://github.com/zesterer/chumsky/blob/main/examples/logos.rs
-        let iter = Token::lexer(source).spanned().map(|(tok, span)| match tok {
-            Ok(tok) => (tok, span.into()),
-            Err(()) => (Token::Error, span.into()),
-        });
+        let iter = Token::lexer(source)
+            .spanned()
+            .map(|x| dbg!(x))
+            .map(|(tok, span)| match tok {
+                Ok(tok) => (tok, span.into()),
+                Err(()) => (Token::Error, span.into()),
+            });
 
         // used for EOF tokens
         let end_span = (source.len()..source.len()).into();
@@ -34,5 +37,24 @@ pub fn parser<'tok, 'src: 'tok, I>() -> impl Parser<'tok, I, Script<'tok>, Ctx<'
 where
     I: ValueInput<'tok, Token = Token<'src>, Span = SimpleSpan>,
 {
-    todo()
+    use Token as T;
+
+    let optional_space = just(T::Whitespace).repeated();
+    //let hard_space = just(T::Whitespace).repeated().at_least(1);
+
+    let statement_delimiter = one_of([T::Semicolon, T::Newline]).padded_by(optional_space);
+
+    let command = todo();
+    let arguments = todo();
+
+    let statement = group((command, arguments)).map(|(cmd, args)| Stmt { cmd, args });
+
+    let script = statement
+        .separated_by(statement_delimiter.repeated().at_least(1))
+        .allow_leading()
+        .allow_trailing()
+        .collect::<Vec<_>>()
+        .map(Script);
+
+    script
 }

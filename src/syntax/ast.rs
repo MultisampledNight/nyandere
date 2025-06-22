@@ -1,5 +1,7 @@
 use crate::{
-    aux::{Owned, Stack}, ext::{Gtin, Integer}, Map
+    Map,
+    aux::{Owned, Stack},
+    ext::{Gtin, Integer},
 };
 
 #[derive(Owned!)]
@@ -7,8 +9,8 @@ pub struct Script<'tok>(pub Vec<Stmt<'tok>>);
 
 #[derive(Owned!)]
 pub struct Stmt<'tok> {
-    cmd: Command,
-    args: Args<'tok>,
+    pub cmd: Command,
+    pub args: Args<'tok>,
 }
 
 #[derive(Owned!)]
