@@ -3,11 +3,11 @@ use crate::{
     ext::{Gtin, Integer},
 };
 
-pub struct Script<'src>(pub Vec<Stmt<'src>>);
+pub struct Script<'tok>(pub Vec<Stmt<'tok>>);
 
-pub struct Stmt<'src> {
+pub struct Stmt<'tok> {
     cmd: Command,
-    args: Args<'src>,
+    args: Args<'tok>,
 }
 
 pub enum Command {
@@ -17,16 +17,16 @@ pub enum Command {
     Balance,
 }
 
-pub struct Args<'src> {
-    pub pos: Vec<Value<'src>>,
-    pub named: Map<Ident<'src>, Value<'src>>,
+pub struct Args<'tok> {
+    pub pos: Vec<Value<'tok>>,
+    pub named: Map<Ident<'tok>, Value<'tok>>,
 }
 
-pub enum Value<'a> {
+pub enum Value<'tok> {
     Money(Money),
     Ratio(Ratio),
     Gtin(Gtin),
-    Name(Name<'a>),
+    Name(Name<'tok>),
 }
 
 pub struct Money(pub Integer);
@@ -36,6 +36,6 @@ pub struct Ratio {
     pub to: Integer,
 }
 
-pub struct Name<'src>(pub Ident<'src>);
+pub struct Name<'tok>(pub Ident<'tok>);
 
-pub type Ident<'src> = &'src str;
+pub type Ident<'tok> = &'tok str;
