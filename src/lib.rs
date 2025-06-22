@@ -29,7 +29,7 @@
 #[macro_use]
 extern crate macro_rules_attribute;
 
-pub type Map<K, V> = std::collections::HashMap<K, V>;
+pub type Map<K, V> = std::collections::BTreeMap<K, V>;
 pub type Set<T> = std::collections::HashSet<T>;
 
 pub mod aux;
@@ -39,9 +39,9 @@ pub mod syntax;
 
 use ext::config;
 pub use runtime::Runtime;
-pub use syntax::ast::Script;
 
 use eyre::{Result, WrapErr, format_err};
+use syntax::ast::Script;
 
 pub fn run() -> Result<()> {
     let cfg = config::cli();
@@ -57,6 +57,8 @@ pub fn eval(script: impl AsRef<str>) -> Result<Runtime> {
     let script = Script::parse(script.as_ref())
         .into_result()
         .map_err(|orig| format_err!("while parsing source code: {orig:?}"))?;
+
+    dbg!(&script);
 
     let mut runtime = Runtime::new();
     runtime.run(script).unwrap();

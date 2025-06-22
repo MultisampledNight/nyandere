@@ -9,8 +9,8 @@ use logos::Logos;
 
 use super::{ast::*, lex::Token};
 
-pub type Error<'tok, 'src: 'tok> = Rich<'tok, Token<'src>, SimpleSpan>;
-pub type Ctx<'tok, 'src: 'tok> = extra::Err<Error<'tok, 'src>>;
+pub type Error<'tok, 'src> = Rich<'tok, Token<'src>, SimpleSpan>;
+pub type Ctx<'tok, 'src> = extra::Err<Error<'tok, 'src>>;
 
 impl<'tok> Script<'tok> {
     /// [`FromStr::from_str`] but not, since that doesn't allow lifetime constraints.
@@ -34,5 +34,5 @@ pub fn parser<'tok, 'src: 'tok, I>() -> impl Parser<'tok, I, Script<'tok>, Ctx<'
 where
     I: ValueInput<'tok, Token = Token<'src>, Span = SimpleSpan>,
 {
-    todo!()
+    todo()
 }

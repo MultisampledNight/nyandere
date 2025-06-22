@@ -10,7 +10,7 @@ use std::ops::Deref;
 
 pub use model::State;
 
-use crate::{Script, aux::NotOrd};
+use crate::{aux::NotOrd, syntax::ast::Script};
 
 #[derive(NotOrd!, Default)]
 pub struct Runtime {
