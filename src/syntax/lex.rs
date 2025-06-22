@@ -40,4 +40,6 @@ pub enum Token<'src> {
     Comment,
     #[regex(r"[ \t]+")]
     Whitespace,
+
+    Error,
 }

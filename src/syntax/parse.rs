@@ -1,25 +1,34 @@
 #![allow(clippy::double_parens)]
 
-use chumsky::{Parser, prelude::*};
+use chumsky::{Parser, input::Stream, prelude::*};
+use logos::{Lexer, Logos};
 
 use crate::ext::{Gtin, Money, Natural};
 
 use super::{ast::*, lex::Token};
 
-pub type Error<'a> = Rich<'a, char, SimpleSpan>;
-pub type Ctx<'a> = extra::Err<Error<'a>>;
+pub type Error<'src> = Rich<'src, Token<'src>, SimpleSpan>;
+pub type Ctx<'src> = extra::Err<Error<'src>>;
 
 impl<'src> Script<'src> {
     /// [`FromStr::from_str`] but not, since that doesn't allow lifetime constraints.
     pub fn parse(source: &'src str) -> ParseResult<Self, Error<'src>> {
-
-        script().parse(source)
+        // based on https://github.com/zesterer/chumsky/blob/main/examples/logos.rs
+        let iter = Token::lexer(source).spanned().map(|(tok, span)| match tok {
+            Ok(tok) => (tok, span.into()),
+            Err(()) => (Token::Error, span.into()),
+        });
+        // navigatable by chumsky beyond just individual advancing
+        let stream = Stream::from_iter(iter).map((0..SRC.len()).into(), |(t, s): (_, _)| (t, s));
+        script().parse(stream)
     }
 }
 
+pub type TokenStream<'src> = Stream<Lexer<'src, (Token<'src>, SimpleSpan)>>;
+
 /// Shorthand for the Parser trait.
-pub trait P<'src, Node>: Parser<'src, Token<'src>, Node, Ctx<'src>> {}
-impl<'src, Node, T> P<'src, Node> for T where T: Parser<'src, Token<'src>, Node, Ctx<'src>> {}
+pub trait P<'src, Node>: Parser<'src, TokenStream<'src>, Node, Ctx<'src>> {}
+impl<'src, Node, T> P<'src, Node> for T where T: Parser<'src, TokenStream<'src>, Node, Ctx<'src>> {}
 
 /// Shorthand for `P<'a, ()>`.
 pub trait E<'a>: P<'a, ()> {}
