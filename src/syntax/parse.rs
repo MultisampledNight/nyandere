@@ -7,7 +7,7 @@ use chumsky::{
 };
 use logos::Logos;
 
-use crate::ext::{Gtin, Money};
+use crate::ext::{Money, Natural};
 
 use super::{ast::*, lex::Token};
 
@@ -35,13 +35,11 @@ impl<'tok> Script<'tok> {
     }
 }
 
-/// Almost like [`Parser::from_str`], but with an important distinction:
-/// The error is directly augmented with a span, if any.
-macro_rules! fromstr {
-    ($parser:expr, $type:ty) => {
-        ($parser)
-            .from_str::<$type>()
-            .map_err_with_state(|err, span, _| Error::custom(span, err))
+/// Invokes the output type's `FromStr` impl. If it errors, that is treated like a parsing error
+/// and its message is directly displayed.
+macro_rules! from_str {
+    ($parser:expr) => {
+        ($parser).try_map(|src, span| src.parse().map_err(|err| Error::custom(span, err)))
     };
 }
 
@@ -58,9 +56,8 @@ where
 
     let statement_delimiter = one_of([T::Semicolon, T::Newline]).padded_by(optional_space);
 
-    let ident = todo();
+    let ident = select! { T::Ident(id) => Ident(id) };
 
-    let natural = select! { T::Natural(src) => src }.from_str().unwrapped();
     // pretty much just faking and directly converting into an integer
     // since we know there's only 2 digits after the dot
     let decimal = select! { T::Decimal(src) => src }.map(|src| {
@@ -68,21 +65,25 @@ where
             .rsplit_once('.')
             .expect("lexer to emit decimal token only with a dot");
 
-        whole.parse().unwrap() * DOT_SHIFT + fraction.parse().unwrap()
+        let nat = |src: &str| src.parse::<Natural>().unwrap();
+
+        nat(whole) * DOT_SHIFT + nat(fraction)
     });
+    // expectation: lexer already made sure that this is, in fact, a natural number
+    let natural = select! { T::Natural(src) => src }.from_str().unwrapped();
 
     // .or_not() because cents is default if nothing is listed
     let cents = natural.then_ignore(optional_space.then(just(T::SignCent)).or_not());
     let euros = choice((decimal, natural.map(|num| num * DOT_SHIFT)))
         .then_ignore(optional_space.then(just(T::SignEuro)));
-    let money = choice((cents, euros)).map(Money);
+    let money = choice((euros, cents)).map(Money);
 
     let split = group((natural, just(T::Colon).padded_by(optional_space), natural))
         .map(|(from, _, to)| Split { from, to });
 
-    let gtin = fromstr!(select! { T::Natural(src) => src }, Gtin);
+    let gtin = from_str!(select! { T::Natural(src) => src });
 
-    let name = ident;
+    let name = ident.map(Name);
 
     let value = choice((
         money.map(Value::Money),
@@ -91,7 +92,8 @@ where
         name.map(Value::Name),
     ));
 
-    let named = group((ident, hard_space, value)).map(|(key, _, value)| Arg::Named { key, value });
+    let named =
+        group((ident, hard_space, value)).map(|(key, _, value)| Arg::Named { key, value });
     let positional = value.map(Arg::Pos);
 
     let arguments = choice((named, positional))

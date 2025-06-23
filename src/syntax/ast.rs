@@ -1,7 +1,6 @@
 use crate::{
-    Map,
     aux::{Owned, Stack},
-    ext::{Gtin, Integer, Money},
+    ext::{Gtin, Money, Natural},
 };
 
 #[derive(Owned!)]
@@ -47,7 +46,10 @@ pub struct Split {
     pub to: Natural,
 }
 
+/// a name in specific is a value, whereas an ident is just somewhere something resembling an
+/// identifier
 #[derive(Stack!)]
 pub struct Name<'tok>(pub Ident<'tok>);
 
-pub type Ident<'tok> = &'tok str;
+#[derive(Stack!)]
+pub struct Ident<'tok>(pub &'tok str);
