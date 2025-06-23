@@ -353,13 +353,13 @@ impl IntoIterator for Pair {
 
 /// Split an amount between 2 parties.
 #[derive(Owned!)]
-pub struct Ratio {
+pub struct Split {
     // invariant: at least one of {source,target} is non-zero
     source: Natural,
     target: Natural,
 }
 
-impl Ratio {
+impl Split {
     pub fn new(source: Natural, target: Natural) -> Result<Self, error::BothZero> {
         if source == Natural::ZERO && target == Natural::ZERO {
             return Err(error::BothZero);
@@ -389,7 +389,7 @@ impl Ratio {
     }
 }
 
-impl Default for Ratio {
+impl Default for Split {
     fn default() -> Self {
         Self {
             source: 0u8.into(),

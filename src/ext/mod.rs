@@ -5,7 +5,7 @@ pub mod ui;
 
 use std::{
     num::ParseIntError,
-    ops::{Add, AddAssign, Sub, SubAssign},
+    ops::{Add, AddAssign, RangeInclusive, Sub, SubAssign},
     str::FromStr,
 };
 
@@ -150,19 +150,21 @@ pub struct Gtin(u64);
 
 impl Gtin {
     /// The largest possible GTIN has 14 digits. For now, that is.
-    pub const MAX_DIGITS: u8 = 14;
-    pub const MAX: Self = Self(10u64.pow(Self::MAX_DIGITS as u32) - 1);
+    pub const DIGITS_MIN: u8 = 8;
+    pub const DIGITS_MAX: u8 = 14;
+    pub const DIGITS_RANGE: RangeInclusive<u8> = Self::DIGITS_MIN..=Self::DIGITS_MAX;
+    pub const MAX: Self = Self(10u64.pow(Self::DIGITS_MAX as u32) - 1);
 
     /// Interpret the integer as-is as GTIN.
     ///
     /// # Errors
     ///
     /// Returns an error if the integer is longer than 14 digits.
-    pub fn new(source: u64) -> Result<Self, TooLongError> {
+    pub fn new(source: u64) -> Result<Self, OutOfRangeError> {
         let gtin = Self(source);
 
-        if gtin.digits() > Self::MAX_DIGITS {
-            return Err(TooLongError {
+        if gtin.digits() > Self::DIGITS_MAX {
+            return Err(OutOfRangeError {
                 orig: source,
                 n: gtin.digits(),
             });
@@ -186,8 +188,22 @@ impl Gtin {
 impl FromStr for Gtin {
     type Err = GtinParseError;
     fn from_str(source: &str) -> Result<Self, Self::Err> {
-        let source = source.parse()?;
-        Self::new(source).map_err(GtinParseError::TooLong)
+        let parsed = source.parse()?;
+
+        // note: the u8 cast is fine,
+        // ceil(log10(2^64 - 1)) = 20,
+        // so 20 digits can be at max in a u64
+        let digits = source.len() as u8;
+        if !Self::DIGITS_RANGE.contains(&digits) {
+            return Err(OutOfRangeError {
+                orig: parsed,
+                n: digits,
+            }
+            .into());
+        }
+
+        let gtin = Self::new(parsed)?;
+        Ok(gtin)
     }
 }
 
@@ -195,19 +211,17 @@ impl FromStr for Gtin {
 pub enum GtinParseError {
     #[error("couldn't parse as an integer: {0}")]
     ExpectedInteger(#[from] ParseIntError),
-    #[error("valid int, but too long: {0}")]
-    TooLong(TooLongError),
+    #[error("valid int, but out of range: {0}")]
+    OutOfRange(#[from] OutOfRangeError),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 #[error(
-    "`{orig}` contains {n} digits while it can contain {} digits at most",
-    Gtin::MAX_DIGITS
+    "`{orig}` contains {n} digits, which is not in the allowed range [{}, {}]",
+    Gtin::DIGITS_MIN,
+    Gtin::DIGITS_MAX
 )]
-pub struct TooLongError {
+pub struct OutOfRangeError {
     pub orig: u64,
-    // yeah, a u8 suffices.
-    // ceil(log10(2^64 - 1)) = 20,
-    // so 20 digits can be at max in a u64
     pub n: u8,
 }

@@ -10,12 +10,13 @@ script = *(*stmt-delim (stmt stmt-delim / comment) *stmt-delim)
 
 comment = "#" *(VCHAR / hsp) newline
 
-stmt = command args
+stmt = command hsp args
 
 command = "create" / "pay" / "deliver" / "balance"
 
-args = *(arg-named / arg-pos)
-arg-named = ident value
+args = arg *(hsp arg)
+arg = arg-named / arg-pos
+arg-named = ident hsp value
 arg-pos = value
 
 value = money / ratio / gtin / name
@@ -26,7 +27,7 @@ euros = (decimal / nat) osp sign-eur
 sign-eur = "€" / "eur" / "EUR" / "euros"
 sign-ct = "¢" / "ct" / "cent" / "cents"
 
-ratio = nat osp ":" osp nat
+split = nat osp ":" osp nat
 
 ; not entirely correct but eh
 gtin = 8*14DIGIT
@@ -38,7 +39,7 @@ name = ident
 ident = ? Default Identifier as per https://www.unicode.org/reports/tr31/#Default_Identifier_Syntax ?
 
 decimal = nat "." 2DIGIT
-nat = (nonzero *DIGIT) / "0"
+nat = 1*DIGIT
 
 ; whitespace
 ; Statement delimiter.

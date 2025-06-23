@@ -1,7 +1,7 @@
 use crate::{
     Map,
     aux::{Owned, Stack},
-    ext::{Gtin, Integer},
+    ext::{Gtin, Integer, Money},
 };
 
 #[derive(Owned!)]
@@ -22,26 +22,29 @@ pub enum Command {
 }
 
 #[derive(Owned!)]
-pub struct Args<'tok> {
-    pub pos: Vec<Value<'tok>>,
-    pub named: Map<Ident<'tok>, Value<'tok>>,
+pub struct Args<'tok>(pub Vec<Arg<'tok>>);
+
+#[derive(Owned!)]
+pub enum Arg<'tok> {
+    Named {
+        key: Ident<'tok>,
+        value: Value<'tok>,
+    },
+    Pos(Value<'tok>),
 }
 
 #[derive(Owned!)]
 pub enum Value<'tok> {
     Money(Money),
-    Ratio(Ratio),
+    Split(Split),
     Gtin(Gtin),
     Name(Name<'tok>),
 }
 
 #[derive(Owned!)]
-pub struct Money(pub Integer);
-
-#[derive(Owned!)]
-pub struct Ratio {
-    pub from: Integer,
-    pub to: Integer,
+pub struct Split {
+    pub from: Natural,
+    pub to: Natural,
 }
 
 #[derive(Stack!)]

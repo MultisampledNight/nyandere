@@ -2,14 +2,14 @@ use crate::{
     Runtime,
     aux::Owned,
     ext::Money,
-    runtime::model::{Dir, Ratio},
+    runtime::model::{Dir, Split},
 };
 
 #[derive(Owned!)]
 pub struct Deliver {
     pub who: Dir,
     pub price: Money,
-    pub split: Ratio,
+    pub split: Split,
 }
 
 impl Runtime {

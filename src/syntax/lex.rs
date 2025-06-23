@@ -28,10 +28,10 @@ pub enum Token<'src> {
     #[regex(r"cents?|ct|¢", priority = 10)]
     SignCent,
 
-    #[regex(r"[+-]?\d+\.\d{2}")]
+    #[regex(r"\d+\.\d{2}")]
     Decimal(&'src str),
-    #[regex(r"[+-]?\d+")]
-    Integer(&'src str),
+    #[regex(r"\d+")]
+    Natural(&'src str),
     /// See <https://www.unicode.org/reports/tr31/#R1>, very backwards-compatible.
     #[regex(r"\p{ID_Start}[\p{ID_Continue}-]*")]
     Ident(&'src str),
