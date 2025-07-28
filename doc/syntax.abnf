@@ -22,7 +22,7 @@ arg-pos = value
 value = money / ratio / gtin / name
 
 money = cents / euros
-cents = nat [osp sign-ct]
+cents = nat osp sign-ct
 euros = (decimal / nat) osp sign-eur
 sign-eur = "€" / "eur" / "EUR" / "euros"
 sign-ct = "¢" / "ct" / "cent" / "cents"

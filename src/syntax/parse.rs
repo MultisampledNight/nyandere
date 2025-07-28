@@ -72,8 +72,7 @@ where
     // expectation: lexer already made sure that this is, in fact, a natural number
     let natural = select! { T::Natural(src) => src }.from_str().unwrapped();
 
-    // .or_not() because cents is default if nothing is listed
-    let cents = natural.then_ignore(optional_space.then(just(T::SignCent)).or_not());
+    let cents = natural.then_ignore(optional_space.then(just(T::SignCent)));
     let euros = choice((decimal, natural.map(|num| num * DOT_SHIFT)))
         .then_ignore(optional_space.then(just(T::SignEuro)));
     let money = choice((euros, cents)).map(Money);
