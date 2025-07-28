@@ -15,8 +15,8 @@
 //!     1. Think of one (where is it used? what are its arguments?)
 //!     2. Update `doc/syntax.abnf` appropriately
 //!     3. Expand the AST in [`syntax::ast`]
-//!     to include `nya` below [`Stmt`][syntax::ast::Stmt]
-//!     in the tree
+//!        to include `nya` below [`Stmt`][syntax::ast::Stmt]
+//!        in the tree
 //!     4. Parse it in [`syntax::parse`] (the `cmd!` macro is super useful here!)
 //! 2. Logic
 //!     1. Add a submodule `nya` in [`runtime::cmd`] for the command

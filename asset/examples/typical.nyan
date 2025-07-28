@@ -1,17 +1,17 @@
 create entity { Store; A; B }
 
 create concept {
-	x price 1€ gtin 10000000
-	y price 2€ gtin 20000000
-	z price 6€ gtin 30000000
+	x price=1€ gtin=10000000
+	y price=2€ gtin=20000000
+	z price=6€ gtin=30000000
 }
 
 deliver {
-	y from A to B
-	30000000 from B to A split 1:2
+	y from=A to=B
+	30000000 from=B to=A split=1:2
 }
 
-balance from A to B # should be -2€
+balance from=A to=B # should be -2€
 
 
 # vim: ft=text

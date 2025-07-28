@@ -1,9 +1,7 @@
 create entity A
 create entity B
 
-create 
+pay 10€ from=A to=B
 
-pay 10€ from A to B
-
-balance from A to B
+balance from=A to=B
 

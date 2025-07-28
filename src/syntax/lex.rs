@@ -21,6 +21,8 @@ pub enum Token<'src> {
     Colon,
     #[token(";")]
     Semicolon,
+    #[token("=")]
+    Equals,
     #[regex(r"\r?\n")]
     Newline,
     #[regex(r"eur(os)?|EUR|€", priority = 10)]

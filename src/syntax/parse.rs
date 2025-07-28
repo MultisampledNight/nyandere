@@ -91,8 +91,8 @@ where
         name.map(Value::Name),
     ));
 
-    let named =
-        group((ident, hard_space, value)).map(|(key, _, value)| Arg::Named { key, value });
+    let named = group((ident, just(T::Equals).padded_by(optional_space), value))
+        .map(|(key, _, value)| Arg::Named { key, value });
     let positional = value.map(Arg::Pos);
 
     let arguments = choice((named, positional))

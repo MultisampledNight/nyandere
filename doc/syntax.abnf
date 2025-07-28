@@ -1,10 +1,6 @@
 ; the actual parser impl accepts a superset of this syntax, actually
 ; think of this syntax as a "declaration of intent"
 ; rather than an ultimate truth
-;
-; (this is a subset in the meaning that any script written in this syntax
-; should also be accepted by the parser,
-; the parser might accept even more though)
 
 script = *(*stmt-delim (stmt stmt-delim / comment) *stmt-delim)
 
@@ -16,7 +12,7 @@ command = "create" / "pay" / "deliver" / "balance"
 
 args = arg *(hsp arg)
 arg = arg-named / arg-pos
-arg-named = ident hsp value
+arg-named = ident osp "=" osp value
 arg-pos = value
 
 value = money / ratio / gtin / name
